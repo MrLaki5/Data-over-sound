@@ -41,7 +41,7 @@ public class Recorder {
                     optimalBufSize<<=1;
                 }
 
-                optimalBufSize=16384;
+                optimalBufSize=13230;
 
                 callback.setBufferSize(optimalBufSize);
 
@@ -58,9 +58,14 @@ public class Recorder {
                 recorder.startRecording();
 
                 int k=1;
+                int whenSend=0;
                 while (thread != null && !thread.isInterrupted() && (k=recorder.read(buffer, 0, optimalBufSize)) > 0) {
-                    Log.i(Recorder.class.getSimpleName(), "Recorderd bits= "+k);
-                    callback.onBufferAvailable(buffer);
+                    //whenSend++;
+                    //Log.i(Recorder.class.getSimpleName(), "Recorderd bits= "+k);
+                    //if(whenSend==2) {
+                        callback.onBufferAvailable(buffer);
+                      //  whenSend=0;
+                    //}
                 }
                 recorder.stop();
                 recorder.release();

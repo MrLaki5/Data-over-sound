@@ -16,7 +16,7 @@ public class BufferSoundTask extends AsyncTask<Void, Void, Void> {
     private boolean work=true;
 
     private int freq=10000;
-    private double durationSec=0.37151928;
+    private double durationSec=0.3;//0.270;//0.37151928;
 
     private int sampleRate = 44100;
     private int bufferSize=0;
@@ -54,7 +54,7 @@ public class BufferSoundTask extends AsyncTask<Void, Void, Void> {
                 break;
             }
 
-            for(int i=0; i<8; i++){
+            for(int i=7; i>=0; i--){
                 int tempFreq=0;
 
                 int temp=getBit(message[position], i);
