@@ -16,7 +16,7 @@ public class BufferSoundTask extends AsyncTask<Void, Void, Void> {
     private boolean work=true;
 
     private int freq=10000;
-    private double durationSec=0.3;//0.270;//0.37151928;
+    private double durationSec=0.270;//0.37151928;
 
     private int sampleRate = 44100;
     private int bufferSize=0;
@@ -65,6 +65,8 @@ public class BufferSoundTask extends AsyncTask<Void, Void, Void> {
                 else{
                     playTone((double)ZERO_F,(double) durationSec);
                 }
+
+                playTone((double)HANDSHAKE_START_F,(double) durationSec);
             }
             position++;
         }

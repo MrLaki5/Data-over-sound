@@ -41,7 +41,7 @@ public class Recorder {
                     optimalBufSize<<=1;
                 }
 
-                optimalBufSize=13230;
+                optimalBufSize=12000;
 
                 callback.setBufferSize(optimalBufSize);
 

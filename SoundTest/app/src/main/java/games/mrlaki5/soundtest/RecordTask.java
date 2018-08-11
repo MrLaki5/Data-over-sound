@@ -82,65 +82,73 @@ public class RecordTask extends AsyncTask<Void, Double, Void> implements Callbac
                 }
             }
             else{
-                if(currNum>20900){
-                    endCounter++;
-                    if(endCounter>=3){
-                        setWorkFalse();
-                    }
+                if(currNum>=19900 && currNum<20250){
+                    lastInfo=2;
+                    lastCount=0;
+                    Log.i(Recorder.class.getSimpleName(), "Synchronization bit");
                 }
                 else{
-                    endCounter=0;
-                    if(currNum>17900 && currNum<18250){
-                        Log.i(Recorder.class.getSimpleName(), " freq: "+currNum + " putting 0");
-                        if ((lastInfo!=0)){
-                            Log.i(Recorder.class.getSimpleName(), " 0 put in a");
-                            lastCount=0;
-                            lastInfo=0;
-                            currInfo<<=1;
-                            currShift++;
+                    if(currNum>20900){
+                        endCounter++;
+                        if(endCounter>=3){
+                            setWorkFalse();
                         }
-                        if((lastInfo==0) && (lastCount==2)){
-                            Log.i(Recorder.class.getSimpleName(), " 0 put in b");
-                            lastCount=0;
-                            currInfo<<=1;
-                            currShift++;
-                        }
-                        lastCount++;
                     }
                     else{
-                        if(currNum>18800 && currNum<19250){
-                            Log.i(Recorder.class.getSimpleName(), " freq: "+currNum + " putting 1");
-                            if ((lastInfo!=1)){
-                                Log.i(Recorder.class.getSimpleName(), " 1 put in a");
+                        endCounter=0;
+                        if(currNum>17900 && currNum<18250){
+                            Log.i(Recorder.class.getSimpleName(), " freq: "+currNum + " putting 0");
+                            if ((lastInfo!=0)){
+                                Log.i(Recorder.class.getSimpleName(), " 0 put in a");
                                 lastCount=0;
-                                lastInfo=1;
+                                lastInfo=0;
                                 currInfo<<=1;
-                                currInfo|=0x01;
                                 currShift++;
                             }
-                            if((lastInfo==1) && (lastCount==2)){
-                                Log.i(Recorder.class.getSimpleName(), " 1 put in b");
+                            /*if((lastInfo==0) && (lastCount==2)){
+                                Log.i(Recorder.class.getSimpleName(), " 0 put in b");
                                 lastCount=0;
                                 currInfo<<=1;
-                                currInfo|=0x01;
                                 currShift++;
-                            }
+                            }*/
                             lastCount++;
                         }
-                    }
-                    if(currShift==8){
-                        byte[] tempArr= new byte[1];
-                        tempArr[0]=currInfo;
-                        currShift=0;
-                        try {
-                            String tempStr= new String(tempArr, "UTF-8");
-                            Log.i(Recorder.class.getSimpleName(), " Transfered to: "+ tempStr);
-                            myString+=tempStr;
-                        } catch (UnsupportedEncodingException e) {
-                            e.printStackTrace();
+                        else{
+                            if(currNum>18800 && currNum<19250){
+                                Log.i(Recorder.class.getSimpleName(), " freq: "+currNum + " putting 1");
+                                if ((lastInfo!=1)){
+                                    Log.i(Recorder.class.getSimpleName(), " 1 put in a");
+                                    lastCount=0;
+                                    lastInfo=1;
+                                    currInfo<<=1;
+                                    currInfo|=0x01;
+                                    currShift++;
+                                }
+                                /*if((lastInfo==1) && (lastCount==2)){
+                                    Log.i(Recorder.class.getSimpleName(), " 1 put in b");
+                                    lastCount=0;
+                                    currInfo<<=1;
+                                    currInfo|=0x01;
+                                    currShift++;
+                                }*/
+                                lastCount++;
+                            }
+                        }
+                        if(currShift==8){
+                            byte[] tempArr= new byte[1];
+                            tempArr[0]=currInfo;
+                            currShift=0;
+                            try {
+                                String tempStr= new String(tempArr, "UTF-8");
+                                Log.i(Recorder.class.getSimpleName(), " Transfered to: "+ tempStr);
+                                myString+=tempStr;
+                            } catch (UnsupportedEncodingException e) {
+                                e.printStackTrace();
+                            }
                         }
                     }
                 }
+
             }
         }
 
