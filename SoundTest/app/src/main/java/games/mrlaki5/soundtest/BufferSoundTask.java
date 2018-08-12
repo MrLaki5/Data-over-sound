@@ -5,6 +5,8 @@ import android.media.AudioManager;
 import android.media.AudioTrack;
 import android.os.AsyncTask;
 
+import java.util.ArrayList;
+
 public class BufferSoundTask extends AsyncTask<Void, Void, Void> {
 
     public static int HANDSHAKE_START_F=20000;
@@ -38,6 +40,7 @@ public class BufferSoundTask extends AsyncTask<Void, Void, Void> {
 
     @Override
     protected Void doInBackground(Void... voids) {
+        ArrayList<Integer> freqs=new BitFrequencyConverter(17000, 19000, 3).calculateFrequency(message);
         bufferSize = AudioTrack.getMinBufferSize(sampleRate, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT);
         myTone = new AudioTrack(AudioManager.STREAM_MUSIC,
                 sampleRate, AudioFormat.CHANNEL_OUT_MONO,
@@ -46,6 +49,11 @@ public class BufferSoundTask extends AsyncTask<Void, Void, Void> {
         myTone.play();
         playTone((double)HANDSHAKE_START_F,(double) durationSec);
         playTone((double)HANDSHAKE_START_F,(double) durationSec);
+        for (int freq: freqs) {
+            playTone((double)freq,(double) durationSec);
+            playTone((double)HANDSHAKE_START_F,(double) durationSec);
+        }
+        /*
         int position=0;
         while(work){
 
@@ -69,7 +77,7 @@ public class BufferSoundTask extends AsyncTask<Void, Void, Void> {
                 playTone((double)HANDSHAKE_START_F,(double) durationSec);
             }
             position++;
-        }
+        }*/
         playTone((double)HANDSHAKE_END_F,(double) durationSec);
         playTone((double)HANDSHAKE_END_F,(double) durationSec);
         return null;
