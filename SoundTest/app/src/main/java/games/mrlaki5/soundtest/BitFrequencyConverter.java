@@ -103,7 +103,7 @@ public class BitFrequencyConverter {
         for(int i=0; i<byteArray.length; i++){
             byte tempByte=byteArray[i];
             for(int j=7; j>=0; j--){
-                if(((j+1+(byteArray.length-(i+1))*8)<numberOfBitsInOneTone) && (!isDataModulo)){
+                if(((currShift+j+1+(byteArray.length-(i+1))*8)<numberOfBitsInOneTone) && (!isDataModulo)){
                     int temp=getBit(tempByte, j);
                     if(temp==1){
                         resultList.add(startFrequency+padding);

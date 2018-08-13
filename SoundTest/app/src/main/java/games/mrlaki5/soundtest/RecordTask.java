@@ -36,7 +36,7 @@ public class RecordTask extends AsyncTask<Void, Double, Void> implements Callbac
         Process.setThreadPriority(THREAD_PRIORITY_BACKGROUND + THREAD_PRIORITY_MORE_FAVORABLE);
         recordedArray=new ArrayList<ChunkElement>();
 
-        bitConverter=new BitFrequencyConverter(17000, 19000, 3);
+        bitConverter=new BitFrequencyConverter(17000, 19000, 4);
 
         recorder=new Recorder();
         recorder.setCallback(this);
@@ -152,7 +152,7 @@ public class RecordTask extends AsyncTask<Void, Double, Void> implements Callbac
         synchronized (recordedArraySem){
             recordedArray.add(new ChunkElement(buffer));
             recordedArraySem.notifyAll();
-            //Log.i(Recorder.class.getSimpleName(), " in queue: "+recordedArray.size());
+            Log.i(Recorder.class.getSimpleName(), " in queue: "+recordedArray.size());
             while(recordedArray.size()>100){
                 try {
                     recordedArraySem.wait();

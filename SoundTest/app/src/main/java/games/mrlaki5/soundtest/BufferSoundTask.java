@@ -40,7 +40,7 @@ public class BufferSoundTask extends AsyncTask<Void, Void, Void> {
 
     @Override
     protected Void doInBackground(Void... voids) {
-        ArrayList<Integer> freqs=new BitFrequencyConverter(17000, 19000, 3).calculateFrequency(message);
+        ArrayList<Integer> freqs=new BitFrequencyConverter(17000, 19000, 4).calculateFrequency(message);
         bufferSize = AudioTrack.getMinBufferSize(sampleRate, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT);
         myTone = new AudioTrack(AudioManager.STREAM_MUSIC,
                 sampleRate, AudioFormat.CHANNEL_OUT_MONO,
@@ -50,8 +50,8 @@ public class BufferSoundTask extends AsyncTask<Void, Void, Void> {
         playTone((double)HANDSHAKE_START_F,(double) durationSec);
         playTone((double)HANDSHAKE_START_F,(double) durationSec);
         for (int freq: freqs) {
-            playTone((double)freq,(double) durationSec);
-            playTone((double)HANDSHAKE_START_F,(double) durationSec);
+            playTone((double)freq,(double) durationSec/2);
+            playTone((double)HANDSHAKE_START_F,(double) durationSec/2);
         }
         /*
         int position=0;
