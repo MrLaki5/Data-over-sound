@@ -66,6 +66,15 @@
         android:layout_centerHorizontal="true"
         android:onClick="soundListen"/>
 
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Settings"
+        android:id="@+id/settingsButt"
+        android:layout_below="@id/listenButt"
+        android:layout_centerHorizontal="true"
+        android:onClick="settings"/>
+
     <EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

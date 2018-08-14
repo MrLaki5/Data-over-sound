@@ -1,5 +1,6 @@
 package games.mrlaki5.soundtest;
 
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Process;
 import android.util.Log;
@@ -13,8 +14,11 @@ import java.util.List;
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 import static android.os.Process.THREAD_PRIORITY_MORE_FAVORABLE;
 
-public class RecordTask extends AsyncTask<Void, Double, Void> implements Callback{
+public class RecordTask extends AsyncTask<Integer, Double, Void> implements Callback{
 
+    int StartFrequency;
+    int EndFrequency;
+    int BitPerTone;
 
     int bufferSizeInBytes = 0;       //JEDAN SHORT JE DVA BYTE 1024 short je 2048 byte
 
@@ -32,11 +36,21 @@ public class RecordTask extends AsyncTask<Void, Double, Void> implements Callbac
     private BitFrequencyConverter bitConverter;
 
     @Override
-    protected Void doInBackground(Void... voids) {
+    protected Void doInBackground(Integer... integers) {
         Process.setThreadPriority(THREAD_PRIORITY_BACKGROUND + THREAD_PRIORITY_MORE_FAVORABLE);
+
+        StartFrequency=integers[0];
+        EndFrequency=integers[1];
+        BitPerTone=integers[2];
+
         recordedArray=new ArrayList<ChunkElement>();
 
-        bitConverter=new BitFrequencyConverter(17000, 19000, 4);
+        bitConverter=new BitFrequencyConverter(StartFrequency, EndFrequency, BitPerTone);
+
+        int HalfPadd=bitConverter.getPadding()/2;
+        int HandshakeStart=bitConverter.getHandshakeStartFreq();
+        int HandshakeEnd=bitConverter.getHandshakeEndFreq();
+        int HandshakePadd=bitConverter.getHandshakePadding();
 
         recorder=new Recorder();
         recorder.setCallback(this);
@@ -69,7 +83,7 @@ public class RecordTask extends AsyncTask<Void, Double, Void> implements Callbac
             publishProgress(currNum);
 
             if(listeningStarted==0){
-                if((currNum>19900) && (currNum<20250)){
+                if((currNum>(HandshakeStart-HandshakePadd)) && (currNum<(HandshakeStart+HandshakePadd))){
                     startCounter++;
                     if(startCounter>=2){
                         listeningStarted=1;
@@ -80,25 +94,27 @@ public class RecordTask extends AsyncTask<Void, Double, Void> implements Callbac
                 }
             }
             else{
-                if(currNum>=19900 && currNum<20250){
+                if((currNum>(HandshakeStart-HandshakePadd)) && (currNum<(HandshakeStart+HandshakePadd))){
                     lastInfo=2;
                     Log.i(Recorder.class.getSimpleName(), "Synchronization bit");
+                    endCounter=0;
                 }
                 else{
-                    if(currNum>20900){
+                    if(currNum>(HandshakeEnd-HandshakePadd)){
                         endCounter++;
                         if(endCounter>=3){
                             setWorkFalse();
                         }
                     }
                     else{
-                        if(currNum>=16900 && currNum<=19250){
-                            if(lastInfo!=0){
-                                lastInfo=0;
-                                Log.i(Recorder.class.getSimpleName(), "calculating for: "+ currNum);
-                                bitConverter.calculateBits(currNum);
-                            }
+                        //if(currNum>=16900 && currNum<=20250){
+                        endCounter=0;
+                        if(lastInfo!=0){
+                            lastInfo=0;
+                            Log.i(Recorder.class.getSimpleName(), "calculating for: "+ currNum);
+                            bitConverter.calculateBits(currNum);
                         }
+                        //}
                     }
                 }
             }
@@ -130,7 +146,7 @@ public class RecordTask extends AsyncTask<Void, Double, Void> implements Callbac
         //Do fast fourier transform
         final  Complex[] fftArray1= FFT.fft(fftTempArray1);
         //Calculate position in array where analyzing should start (high frequency filter)
-        int startIndex1=(15000*(1024))/44100;
+        int startIndex1=((StartFrequency-100)*(1024))/44100;
         int max_index1 = startIndex1;
         double max_magnitude1 = (int)fftArray1[max_index1].abs();
         double tempMagnitude;

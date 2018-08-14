@@ -8,16 +8,25 @@ public class BitFrequencyConverter {
     private int startFrequency;
     private int endFrequency;
     private int padding;
+    private int handshakeStartFreq;
+    private int handshakeEndFreq;
+    private int handshakePadding;
 
     private ArrayList<Byte> readBytes;
     private byte currByte;
     private int currShift;
 
     public BitFrequencyConverter(int startFrequency, int endFrequency, int numberOfBitsInOneTone){
-        this.startFrequency=startFrequency;
-        this.endFrequency=endFrequency;
         this.numberOfBitsInOneTone=numberOfBitsInOneTone;
-        this.padding=(endFrequency-startFrequency)/(2+(int)Math.pow(2, numberOfBitsInOneTone));
+        this.padding=((endFrequency-750)-startFrequency)/(2+(int)Math.pow(2, numberOfBitsInOneTone));
+
+        this.handshakeEndFreq=endFrequency;
+        this.handshakeStartFreq=endFrequency-500;
+        this.handshakePadding=250;
+
+        this.startFrequency=startFrequency;
+        this.endFrequency=endFrequency-750;
+
         readBytes=new ArrayList<Byte>();
         currByte=0x00;
         currShift=0;
@@ -45,9 +54,10 @@ public class BitFrequencyConverter {
             }
         }
         if(freqFound){
-            byte mask=0x01;
-            mask<<=(numberOfBitsInOneTone-1);
-            while(mask!=0x00){
+            int tempCounter=numberOfBitsInOneTone;
+            while(tempCounter>0){
+                byte mask=0x01;
+                mask<<=(tempCounter-1);
                 currByte<<=1;
                 if((mask&resultBytes)!=0x00){
                    currByte+=0x01;
@@ -58,7 +68,7 @@ public class BitFrequencyConverter {
                     currShift=0;
                     currByte=0x00;
                 }
-                mask>>=1;
+                tempCounter--;
             }
         }
         else {
@@ -145,5 +155,21 @@ public class BitFrequencyConverter {
             i++;
         }
         return retArr;
+    }
+
+    public int getPadding() {
+        return padding;
+    }
+
+    public int getHandshakePadding(){
+        return handshakePadding;
+    }
+
+    public int getHandshakeStartFreq() {
+        return handshakeStartFreq;
+    }
+
+    public int getHandshakeEndFreq() {
+        return handshakeEndFreq;
     }
 }

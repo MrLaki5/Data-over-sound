@@ -7,13 +7,10 @@ import android.os.AsyncTask;
 
 import java.util.ArrayList;
 
-public class BufferSoundTask extends AsyncTask<Void, Void, Void> {
+public class BufferSoundTask extends AsyncTask<Integer, Void, Void> {
 
-    public static int HANDSHAKE_START_F=20000;
+    public static int HANDSHAKE_START_F=20500;
     public static int HANDSHAKE_END_F=21000;
-
-    public static int ONE_F=19000;
-    public static int ZERO_F=18000;
 
     private boolean work=true;
 
@@ -39,47 +36,26 @@ public class BufferSoundTask extends AsyncTask<Void, Void, Void> {
     }
 
     @Override
-    protected Void doInBackground(Void... voids) {
-        ArrayList<Integer> freqs=new BitFrequencyConverter(17000, 19000, 4).calculateFrequency(message);
+    protected Void doInBackground(Integer... integers) {
+        int startFreq=integers[0];
+        int endFreq=integers[1];
+        int bitsPerTone=integers[2];
+        BitFrequencyConverter bitConverter=new BitFrequencyConverter(startFreq, endFreq, bitsPerTone);
+        ArrayList<Integer> freqs=bitConverter.calculateFrequency(message);
         bufferSize = AudioTrack.getMinBufferSize(sampleRate, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT);
         myTone = new AudioTrack(AudioManager.STREAM_MUSIC,
                 sampleRate, AudioFormat.CHANNEL_OUT_MONO,
                 AudioFormat.ENCODING_PCM_16BIT, bufferSize,
                 AudioTrack.MODE_STREAM);
         myTone.play();
-        playTone((double)HANDSHAKE_START_F,(double) durationSec);
-        playTone((double)HANDSHAKE_START_F,(double) durationSec);
+        playTone((double)bitConverter.getHandshakeStartFreq(),(double) durationSec);
+        playTone((double)bitConverter.getHandshakeStartFreq(),(double) durationSec);
         for (int freq: freqs) {
             playTone((double)freq,(double) durationSec/2);
-            playTone((double)HANDSHAKE_START_F,(double) durationSec/2);
+            playTone((double)bitConverter.getHandshakeStartFreq(),(double) durationSec);
         }
-        /*
-        int position=0;
-        while(work){
-
-            if(position>=message.length){
-                work=false;
-                break;
-            }
-
-            for(int i=7; i>=0; i--){
-                int tempFreq=0;
-
-                int temp=getBit(message[position], i);
-
-                if(temp==1){
-                    playTone((double)ONE_F,(double) durationSec);
-                }
-                else{
-                    playTone((double)ZERO_F,(double) durationSec);
-                }
-
-                playTone((double)HANDSHAKE_START_F,(double) durationSec);
-            }
-            position++;
-        }*/
-        playTone((double)HANDSHAKE_END_F,(double) durationSec);
-        playTone((double)HANDSHAKE_END_F,(double) durationSec);
+        playTone((double)bitConverter.getHandshakeEndFreq(),(double) durationSec);
+        playTone((double)bitConverter.getHandshakeEndFreq(),(double) durationSec);
         return null;
     }
 
