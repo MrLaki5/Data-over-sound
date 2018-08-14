@@ -50,7 +50,7 @@ public class RecordTask extends AsyncTask<Integer, Double, Void> implements Call
         int HalfPadd=bitConverter.getPadding()/2;
         int HandshakeStart=bitConverter.getHandshakeStartFreq();
         int HandshakeEnd=bitConverter.getHandshakeEndFreq();
-        int HandshakePadd=bitConverter.getHandshakePadding();
+        //int HandshakePadd=bitConverter.getHandshakePadding();
 
         recorder=new Recorder();
         recorder.setCallback(this);
@@ -83,7 +83,7 @@ public class RecordTask extends AsyncTask<Integer, Double, Void> implements Call
             publishProgress(currNum);
 
             if(listeningStarted==0){
-                if((currNum>(HandshakeStart-HandshakePadd)) && (currNum<(HandshakeStart+HandshakePadd))){
+                if((currNum>(HandshakeStart-HalfPadd)) && (currNum<(HandshakeStart+HalfPadd))){
                     startCounter++;
                     if(startCounter>=2){
                         listeningStarted=1;
@@ -94,13 +94,13 @@ public class RecordTask extends AsyncTask<Integer, Double, Void> implements Call
                 }
             }
             else{
-                if((currNum>(HandshakeStart-HandshakePadd)) && (currNum<(HandshakeStart+HandshakePadd))){
+                if((currNum>(HandshakeStart-HalfPadd)) && (currNum<(HandshakeStart+HalfPadd))){
                     lastInfo=2;
                     Log.i(Recorder.class.getSimpleName(), "Synchronization bit");
                     endCounter=0;
                 }
                 else{
-                    if(currNum>(HandshakeEnd-HandshakePadd)){
+                    if(currNum>(HandshakeEnd-HalfPadd)){
                         endCounter++;
                         if(endCounter>=3){
                             setWorkFalse();

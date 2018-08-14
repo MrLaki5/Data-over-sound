@@ -10,7 +10,6 @@ public class BitFrequencyConverter {
     private int padding;
     private int handshakeStartFreq;
     private int handshakeEndFreq;
-    private int handshakePadding;
 
     private ArrayList<Byte> readBytes;
     private byte currByte;
@@ -18,14 +17,12 @@ public class BitFrequencyConverter {
 
     public BitFrequencyConverter(int startFrequency, int endFrequency, int numberOfBitsInOneTone){
         this.numberOfBitsInOneTone=numberOfBitsInOneTone;
-        this.padding=((endFrequency-750)-startFrequency)/(2+(int)Math.pow(2, numberOfBitsInOneTone));
-
+        this.padding=(endFrequency-startFrequency)/(4+(int)Math.pow(2, numberOfBitsInOneTone));
         this.handshakeEndFreq=endFrequency;
-        this.handshakeStartFreq=endFrequency-500;
-        this.handshakePadding=250;
+        this.handshakeStartFreq=endFrequency-this.padding;
 
         this.startFrequency=startFrequency;
-        this.endFrequency=endFrequency-750;
+        this.endFrequency=endFrequency-2*this.padding;
 
         readBytes=new ArrayList<Byte>();
         currByte=0x00;
@@ -159,10 +156,6 @@ public class BitFrequencyConverter {
 
     public int getPadding() {
         return padding;
-    }
-
-    public int getHandshakePadding(){
-        return handshakePadding;
     }
 
     public int getHandshakeStartFreq() {
