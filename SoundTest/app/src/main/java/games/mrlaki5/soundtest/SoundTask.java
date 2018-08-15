@@ -71,8 +71,11 @@ public class SoundTask extends AsyncTask<Void, Void, Void> {
         byte generatedSnd[] = new byte[2 * numSamples];
 
 
+        double anglePadding = (freqOfTone * 2 * Math.PI) / (sampleRate);
+        double angleCurrent = 0;
         for (int i = 0; i < numSamples; ++i) {      // Fill the sample array
-            sample[i] = Math.sin(freqOfTone * 2 * Math.PI * i / (sampleRate));
+            sample[i] = Math.sin(angleCurrent);
+            angleCurrent += anglePadding;
         }
 
         // convert to 16 bit pcm sound array

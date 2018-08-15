@@ -9,18 +9,12 @@ import java.util.ArrayList;
 
 public class BufferSoundTask extends AsyncTask<Integer, Void, Void> {
 
-    public static int HANDSHAKE_START_F=20500;
-    public static int HANDSHAKE_END_F=21000;
-
     private boolean work=true;
 
-    private int freq=10000;
-    private double durationSec=0.270;//0.37151928;
+    private double durationSec=0.2;//0.270;  //CAN PLAY ON 1.8 BUT NOT IN HAND, OPTIMAL 1.9
 
     private int sampleRate = 44100;
     private int bufferSize=0;
-
-    private boolean changeNeeded=true;
 
     private AudioTrack myTone=null;
 
@@ -28,11 +22,6 @@ public class BufferSoundTask extends AsyncTask<Integer, Void, Void> {
 
     public void setBuffer(byte[] message){
         this.message=message;
-    }
-
-    public int getBit(byte check ,int position)
-    {
-        return (check >> position) & 1;
     }
 
     @Override
@@ -48,14 +37,16 @@ public class BufferSoundTask extends AsyncTask<Integer, Void, Void> {
                 AudioFormat.ENCODING_PCM_16BIT, bufferSize,
                 AudioTrack.MODE_STREAM);
         myTone.play();
-        playTone((double)bitConverter.getHandshakeStartFreq(),(double) durationSec);
-        playTone((double)bitConverter.getHandshakeStartFreq(),(double) durationSec);
+        playTone((double)bitConverter.getHandshakeStartFreq(), durationSec);
+        //playTone((double)bitConverter.getHandshakeStartFreq(), durationSec/2);
         for (int freq: freqs) {
-            playTone((double)freq,(double) durationSec/2);
-            playTone((double)bitConverter.getHandshakeStartFreq(),(double) durationSec);
+            playTone((double)freq,durationSec);
+            //playTone((double)freq,durationSec/2);
+            playTone((double)bitConverter.getHandshakeStartFreq(), durationSec);
         }
-        playTone((double)bitConverter.getHandshakeEndFreq(),(double) durationSec);
-        playTone((double)bitConverter.getHandshakeEndFreq(),(double) durationSec);
+        playTone((double)bitConverter.getHandshakeEndFreq(), durationSec);
+        //playTone((double)bitConverter.getHandshakeEndFreq(), durationSec);
+        myTone.release();
         return null;
     }
 
@@ -65,17 +56,6 @@ public class BufferSoundTask extends AsyncTask<Integer, Void, Void> {
 
     public void setWorkFalse() {
         this.work = false;
-    }
-
-    public int getFreq() {
-        return freq;
-    }
-
-    public void setFreq(int freq) {
-        synchronized (this){
-            this.freq = freq;
-            changeNeeded=true;
-        }
     }
 
     public void playTone(double freqOfTone, double duration) {
@@ -90,8 +70,11 @@ public class BufferSoundTask extends AsyncTask<Integer, Void, Void> {
         byte generatedSnd[] = new byte[2 * numSamples];
 
 
+        double anglePadding = (freqOfTone * 2 * Math.PI) / (sampleRate);
+        double angleCurrent = 0;
         for (int i = 0; i < numSamples; ++i) {      // Fill the sample array
-            sample[i] = Math.sin(freqOfTone * 2 * Math.PI * i / (sampleRate));
+            sample[i] = Math.sin(angleCurrent);
+            angleCurrent += anglePadding;
         }
 
         // convert to 16 bit pcm sound array
@@ -134,18 +117,12 @@ public class BufferSoundTask extends AsyncTask<Integer, Void, Void> {
 
         //AudioTrack audioTrack = null;                                   // Get audio track
         try {
-
-            //audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC,
-            // sampleRate, AudioFormat.CHANNEL_OUT_MONO,
-            // AudioFormat.ENCODING_PCM_16BIT, bufferSize,
-            // AudioTrack.MODE_STREAM);
-            //audioTrack.play();                                          // Play the track
+            // Play the track
             myTone.write(generatedSnd, 0, generatedSnd.length);     // Load the track
-            //myTone.setLoopPoints(0, generatedSnd.length/4, -1);
         }
         catch (Exception e){
+
         }
-        //if (audioTrack != null) audioTrack.release();           // Track play done. Release track.
     }
 
 }

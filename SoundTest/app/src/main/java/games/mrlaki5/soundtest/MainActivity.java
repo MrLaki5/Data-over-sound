@@ -58,11 +58,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        ((SeekBar) findViewById(R.id.soundSlider)).setOnSeekBarChangeListener(soundSeekListener);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_main);
+        ((SeekBar) findViewById(R.id.soundSlider)).setOnSeekBarChangeListener(soundSeekListener);
         //Load preferences
         SharedPreferences preferences = getSharedPreferences("Settings", 0);
         //If values in preferences dont exist (on first start), create them

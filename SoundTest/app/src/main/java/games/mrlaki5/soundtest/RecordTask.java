@@ -85,7 +85,7 @@ public class RecordTask extends AsyncTask<Integer, Double, Void> implements Call
             if(listeningStarted==0){
                 if((currNum>(HandshakeStart-HalfPadd)) && (currNum<(HandshakeStart+HalfPadd))){
                     startCounter++;
-                    if(startCounter>=2){
+                    if(startCounter>=1){//2
                         listeningStarted=1;
                     }
                 }
@@ -102,12 +102,13 @@ public class RecordTask extends AsyncTask<Integer, Double, Void> implements Call
                 else{
                     if(currNum>(HandshakeEnd-HalfPadd)){
                         endCounter++;
-                        if(endCounter>=3){
+                        if(endCounter>=1){//if(endCounter>=3){
                             setWorkFalse();
                         }
                     }
                     else{
                         //if(currNum>=16900 && currNum<=20250){
+                        Log.i(Recorder.class.getSimpleName(), "income data: "+ currNum);
                         endCounter=0;
                         if(lastInfo!=0){
                             lastInfo=0;
