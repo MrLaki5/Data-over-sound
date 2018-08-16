@@ -1,4 +1,4 @@
-package games.mrlaki5.soundtest;
+package games.mrlaki5.soundtest.FFT;
 
 /******************************************************************************
  *  Compilation:  javac Complex.java

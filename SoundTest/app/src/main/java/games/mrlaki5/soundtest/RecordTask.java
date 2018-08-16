@@ -1,6 +1,5 @@
 package games.mrlaki5.soundtest;
 
-import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Process;
 import android.util.Log;
@@ -11,12 +10,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.List;
 
 import games.mrlaki5.soundtest.AdaptiveHuffman.AdaptiveHuffmanDecompress;
 import games.mrlaki5.soundtest.AdaptiveHuffman.BitInputStream;
+import games.mrlaki5.soundtest.FFT.Complex;
+import games.mrlaki5.soundtest.FFT.FFT;
+import games.mrlaki5.soundtest.ReedSolomon.EncoderDecoder;
+import games.mrlaki5.soundtest.ReedSolomon.ReedSolomonException;
 
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 import static android.os.Process.THREAD_PRIORITY_MORE_FAVORABLE;
@@ -132,6 +133,7 @@ public class RecordTask extends AsyncTask<Integer, Double, Void> implements Call
         byte[] readBytes=bitConverter.getReadBytes();
         try {
             if(Encoding==1) {
+                /*
                 InputStream in = new ByteArrayInputStream(readBytes);
                 ByteArrayOutputStream out = new ByteArrayOutputStream();
                 try {
@@ -139,6 +141,13 @@ public class RecordTask extends AsyncTask<Integer, Double, Void> implements Call
                     readBytes = out.toByteArray();
                 } catch (IOException e) {
                     e.printStackTrace();
+                }*/
+                EncoderDecoder encoder = new EncoderDecoder();
+                //final byte[] fec_payload;
+                try {
+                    readBytes = encoder.decodeData(readBytes, 4);
+                } catch (Exception e) {
+
                 }
             }
             myString= new String(readBytes, "UTF-8");

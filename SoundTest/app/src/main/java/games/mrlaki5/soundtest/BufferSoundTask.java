@@ -13,6 +13,7 @@ import java.util.ArrayList;
 
 import games.mrlaki5.soundtest.AdaptiveHuffman.AdaptiveHuffmanCompress;
 import games.mrlaki5.soundtest.AdaptiveHuffman.BitOutputStream;
+import games.mrlaki5.soundtest.ReedSolomon.EncoderDecoder;
 
 public class BufferSoundTask extends AsyncTask<Integer, Void, Void> {
 
@@ -43,6 +44,7 @@ public class BufferSoundTask extends AsyncTask<Integer, Void, Void> {
 
         if(encoding==1) {
             encodedMessage = null;
+            /*
             InputStream in = new ByteArrayInputStream(message);
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             BitOutputStream bitOut = new BitOutputStream(out);
@@ -56,6 +58,14 @@ public class BufferSoundTask extends AsyncTask<Integer, Void, Void> {
             }
 
             if (encodedMessage == null) {
+                return null;
+            }*/
+
+            EncoderDecoder encoder = new EncoderDecoder();
+            //final byte[] fec_payload;
+            try {
+                encodedMessage = encoder.encodeData(message, 4);
+            } catch (EncoderDecoder.DataTooLargeException e) {
                 return null;
             }
         }

@@ -34,6 +34,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="18000"
+                android:layout_marginStart="10dp"
                 android:inputType="number"
                 android:id="@+id/startFrequencyEdit"/>
 
@@ -48,6 +49,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="20000"
+                android:layout_marginStart="10dp"
                 android:inputType="number"
                 android:id="@+id/endFrequencyEdit"/>
 
@@ -65,6 +67,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:max="7"
+                android:layout_marginStart="10dp"
                 android:progress="3"/>
 
             <TextView
@@ -78,9 +81,43 @@
             <Switch
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
                 android:id="@+id/encodingSwitch"/>
 
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="20dp"
+                android:textStyle="bold"
+                android:text="Error detection (solomon):"
+                android:id="@+id/errDetectTW"/>
+
+            <Switch
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:id="@+id/errDetectSwitch"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="18dp"
+                android:textStyle="bold"
+                android:text="Error detection bytes number: 2"
+                android:layout_marginStart="10dp"
+                android:id="@+id/edNumBytesTW"/>
+
+            <SeekBar
+                android:id="@+id/edNumBytesSeek"
+                style="@style/Widget.AppCompat.SeekBar.Discrete"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:max="7"
+                android:layout_marginStart="15dp"
+                android:progress="3"/>
+
             <LinearLayout
+                android:layout_marginTop="15dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
