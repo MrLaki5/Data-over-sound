@@ -5,13 +5,20 @@ import android.media.AudioManager;
 import android.media.AudioTrack;
 import android.os.AsyncTask;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
+
+import games.mrlaki5.soundtest.AdaptiveHuffman.AdaptiveHuffmanCompress;
+import games.mrlaki5.soundtest.AdaptiveHuffman.BitOutputStream;
 
 public class BufferSoundTask extends AsyncTask<Integer, Void, Void> {
 
     private boolean work=true;
 
-    private double durationSec=0.2;//0.270;  //CAN PLAY ON 1.8 BUT NOT IN HAND, OPTIMAL 1.9
+    private double durationSec=0.270;//0.270;  //CAN PLAY ON 1.8 BUT NOT IN HAND, OPTIMAL 1.9
 
     private int sampleRate = 44100;
     private int bufferSize=0;
@@ -29,8 +36,31 @@ public class BufferSoundTask extends AsyncTask<Integer, Void, Void> {
         int startFreq=integers[0];
         int endFreq=integers[1];
         int bitsPerTone=integers[2];
+        int encoding=integers[3];
         BitFrequencyConverter bitConverter=new BitFrequencyConverter(startFreq, endFreq, bitsPerTone);
-        ArrayList<Integer> freqs=bitConverter.calculateFrequency(message);
+
+        byte[] encodedMessage=message;
+
+        if(encoding==1) {
+            encodedMessage = null;
+            InputStream in = new ByteArrayInputStream(message);
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            BitOutputStream bitOut = new BitOutputStream(out);
+
+            try {
+                AdaptiveHuffmanCompress.compress(in, bitOut);
+                bitOut.close();
+                encodedMessage = out.toByteArray();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            if (encodedMessage == null) {
+                return null;
+            }
+        }
+        ArrayList<Integer> freqs=bitConverter.calculateFrequency(encodedMessage);
+
         bufferSize = AudioTrack.getMinBufferSize(sampleRate, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT);
         myTone = new AudioTrack(AudioManager.STREAM_MUSIC,
                 sampleRate, AudioFormat.CHANNEL_OUT_MONO,
@@ -38,14 +68,14 @@ public class BufferSoundTask extends AsyncTask<Integer, Void, Void> {
                 AudioTrack.MODE_STREAM);
         myTone.play();
         playTone((double)bitConverter.getHandshakeStartFreq(), durationSec);
-        //playTone((double)bitConverter.getHandshakeStartFreq(), durationSec/2);
+        playTone((double)bitConverter.getHandshakeStartFreq(), durationSec);
         for (int freq: freqs) {
-            playTone((double)freq,durationSec);
-            //playTone((double)freq,durationSec/2);
+            //playTone((double)freq,durationSec);
+            playTone((double)freq,durationSec/2);
             playTone((double)bitConverter.getHandshakeStartFreq(), durationSec);
         }
         playTone((double)bitConverter.getHandshakeEndFreq(), durationSec);
-        //playTone((double)bitConverter.getHandshakeEndFreq(), durationSec);
+        playTone((double)bitConverter.getHandshakeEndFreq(), durationSec);
         myTone.release();
         return null;
     }

@@ -6,10 +6,17 @@ import android.os.Process;
 import android.util.Log;
 import android.widget.TextView;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+
+import games.mrlaki5.soundtest.AdaptiveHuffman.AdaptiveHuffmanDecompress;
+import games.mrlaki5.soundtest.AdaptiveHuffman.BitInputStream;
 
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 import static android.os.Process.THREAD_PRIORITY_MORE_FAVORABLE;
@@ -19,6 +26,7 @@ public class RecordTask extends AsyncTask<Integer, Double, Void> implements Call
     int StartFrequency;
     int EndFrequency;
     int BitPerTone;
+    int Encoding;
 
     int bufferSizeInBytes = 0;       //JEDAN SHORT JE DVA BYTE 1024 short je 2048 byte
 
@@ -42,6 +50,7 @@ public class RecordTask extends AsyncTask<Integer, Double, Void> implements Call
         StartFrequency=integers[0];
         EndFrequency=integers[1];
         BitPerTone=integers[2];
+        Encoding=integers[3];
 
         recordedArray=new ArrayList<ChunkElement>();
 
@@ -85,7 +94,7 @@ public class RecordTask extends AsyncTask<Integer, Double, Void> implements Call
             if(listeningStarted==0){
                 if((currNum>(HandshakeStart-HalfPadd)) && (currNum<(HandshakeStart+HalfPadd))){
                     startCounter++;
-                    if(startCounter>=1){//2
+                    if(startCounter>=2){
                         listeningStarted=1;
                     }
                 }
@@ -102,7 +111,7 @@ public class RecordTask extends AsyncTask<Integer, Double, Void> implements Call
                 else{
                     if(currNum>(HandshakeEnd-HalfPadd)){
                         endCounter++;
-                        if(endCounter>=1){//if(endCounter>=3){
+                        if(endCounter>=2){
                             setWorkFalse();
                         }
                     }
@@ -122,6 +131,16 @@ public class RecordTask extends AsyncTask<Integer, Double, Void> implements Call
         }
         byte[] readBytes=bitConverter.getReadBytes();
         try {
+            if(Encoding==1) {
+                InputStream in = new ByteArrayInputStream(readBytes);
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
+                try {
+                    AdaptiveHuffmanDecompress.decompress(new BitInputStream(in), out);
+                    readBytes = out.toByteArray();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
             myString= new String(readBytes, "UTF-8");
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();

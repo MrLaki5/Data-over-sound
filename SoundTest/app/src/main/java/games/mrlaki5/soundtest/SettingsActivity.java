@@ -5,8 +5,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.SeekBar;
+import android.widget.Switch;
 import android.widget.TextView;
 
 //Activity for showing settings
@@ -18,6 +20,7 @@ public class SettingsActivity extends AppCompatActivity {
     public static String KEY_END_FREQUENCY="EndFrequency";
     //Time between two shake sensor events key preference value
     public static String KEY_BIT_PER_TONE="BitPerTone";
+    public static String KEY_ENCODING="Encoding";
 
 
     //Volume default preference value
@@ -26,11 +29,11 @@ public class SettingsActivity extends AppCompatActivity {
     public static int DEF_END_FREQUENCY=20000;
     //Time between two shake sensor events default preference value
     public static int DEF_BIT_PER_TONE=4;
-
+    public static int DEF_ENCODING=0;
 
     //Shake treshold current preference value
     private int CurrentBitPerTone=0;
-
+    private int CurrentEncoding=0;
 
     //Shared preferences where settings are stored
     private SharedPreferences preferences;
@@ -39,6 +42,7 @@ public class SettingsActivity extends AppCompatActivity {
 
     //Shake treshold slider
     private SeekBar bitPerToneSlider;
+    private Switch encodingSwitch;
 
     //Shake treshold Text View
     private TextView bitPerToneTW;
@@ -73,6 +77,17 @@ public class SettingsActivity extends AppCompatActivity {
                 }
             };
 
+    CompoundButton.OnCheckedChangeListener encodingListener=new CompoundButton.OnCheckedChangeListener() {
+        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+            if(isChecked){
+                CurrentEncoding=1;
+            }
+            else{
+                CurrentEncoding=0;
+            }
+        }
+    };
+
 
     //Method called on creation of SettingsActivity
     @Override
@@ -90,6 +105,7 @@ public class SettingsActivity extends AppCompatActivity {
         int CurrStartFreq=preferences.getInt(KEY_START_FREQUENCY, DEF_START_FREQUENCY);
         //Get value of sound volume
         int CurrEndFreq=preferences.getInt(KEY_END_FREQUENCY, DEF_END_FREQUENCY);
+        CurrentEncoding=preferences.getInt(KEY_ENCODING, DEF_ENCODING);
         //Create shared preferences editor
         editor=preferences.edit();
         //Find shake treshold TextView on view and set text
@@ -106,6 +122,15 @@ public class SettingsActivity extends AppCompatActivity {
         endFreqET=((EditText) findViewById(R.id.endFrequencyEdit));
         startFreqET.setText(""+CurrStartFreq);
         endFreqET.setText(""+CurrEndFreq);
+
+        encodingSwitch=((Switch) findViewById(R.id.encodingSwitch));
+        encodingSwitch.setOnCheckedChangeListener(encodingListener);
+        if(CurrentEncoding==1) {
+            encodingSwitch.setChecked(true);
+        }
+        else{
+            encodingSwitch.setChecked(false);
+        }
     }
 
     //Method used for restoring default settings values
@@ -113,14 +138,22 @@ public class SettingsActivity extends AppCompatActivity {
         editor.putInt(KEY_BIT_PER_TONE, DEF_BIT_PER_TONE);
         editor.putInt(KEY_START_FREQUENCY, DEF_START_FREQUENCY);
         editor.putInt(KEY_END_FREQUENCY, DEF_END_FREQUENCY);
+        editor.putInt(KEY_ENCODING, DEF_ENCODING);
         editor.commit();
         //Update current activity values to default ones
         CurrentBitPerTone=DEF_BIT_PER_TONE;
+        CurrentEncoding=DEF_ENCODING;
         //Update text views to default values
         int tempBPT=CurrentBitPerTone-1;
         bitPerToneTW.setText("Bits per tone: " + CurrentBitPerTone);
         //Update sliders to default values
         bitPerToneSlider.setProgress(tempBPT);
+        if(CurrentEncoding==1) {
+            encodingSwitch.setChecked(true);
+        }
+        else{
+            encodingSwitch.setChecked(false);
+        }
         startFreqET.setText(""+DEF_START_FREQUENCY);
         endFreqET.setText(""+DEF_END_FREQUENCY);
     }
@@ -133,6 +166,7 @@ public class SettingsActivity extends AppCompatActivity {
         editor.putInt(KEY_START_FREQUENCY, stFI);
         editor.putInt(KEY_END_FREQUENCY, endFI);
         editor.putInt(KEY_BIT_PER_TONE, CurrentBitPerTone);
+        editor.putInt(KEY_ENCODING, CurrentEncoding);
         editor.commit();
     }
 }

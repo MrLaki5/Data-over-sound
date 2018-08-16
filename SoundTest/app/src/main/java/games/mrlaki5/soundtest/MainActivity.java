@@ -76,6 +76,8 @@ public class MainActivity extends AppCompatActivity {
             //Set value of sound volume
             editor.putInt(SettingsActivity.KEY_BIT_PER_TONE,
                     SettingsActivity.DEF_BIT_PER_TONE);
+            editor.putInt(SettingsActivity.KEY_ENCODING,
+                    SettingsActivity.DEF_ENCODING);
             editor.commit();
         }
     }
@@ -122,13 +124,15 @@ public class MainActivity extends AppCompatActivity {
             if(taskList==null){
                 TextView tw=findViewById(R.id.currFreq);
                 SharedPreferences preferences = getSharedPreferences("Settings", 0);
-                Integer[] tempArr= new Integer[3];
+                Integer[] tempArr= new Integer[4];
                 tempArr[0]=preferences.getInt(SettingsActivity.KEY_START_FREQUENCY,
                         SettingsActivity.DEF_START_FREQUENCY);
                 tempArr[1]=preferences.getInt(SettingsActivity.KEY_END_FREQUENCY,
                         SettingsActivity.DEF_END_FREQUENCY);
                 tempArr[2]=preferences.getInt(SettingsActivity.KEY_BIT_PER_TONE,
                         SettingsActivity.DEF_BIT_PER_TONE);
+                tempArr[3]=preferences.getInt(SettingsActivity.KEY_ENCODING,
+                        SettingsActivity.DEF_ENCODING);
                 taskList=new RecordTask();
                 taskList.setTW(tw);
                 //taskList.execute();
@@ -154,7 +158,7 @@ public class MainActivity extends AppCompatActivity {
                 byte[] message=messageStr.getBytes("UTF-8");
                 buffSoundTask=new BufferSoundTask();
                 buffSoundTask.setBuffer(message);
-                Integer[] tempArr= new Integer[3];
+                Integer[] tempArr= new Integer[4];
                 SharedPreferences preferences = getSharedPreferences("Settings", 0);
                 tempArr[0]=preferences.getInt(SettingsActivity.KEY_START_FREQUENCY,
                         SettingsActivity.DEF_START_FREQUENCY);
@@ -162,6 +166,8 @@ public class MainActivity extends AppCompatActivity {
                         SettingsActivity.DEF_END_FREQUENCY);
                 tempArr[2]=preferences.getInt(SettingsActivity.KEY_BIT_PER_TONE,
                         SettingsActivity.DEF_BIT_PER_TONE);
+                tempArr[3]=preferences.getInt(SettingsActivity.KEY_ENCODING,
+                        SettingsActivity.DEF_ENCODING);
                 buffSoundTask.execute(tempArr);
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
