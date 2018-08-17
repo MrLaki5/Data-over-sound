@@ -38,34 +38,31 @@ public class BufferSoundTask extends AsyncTask<Integer, Void, Void> {
         int endFreq=integers[1];
         int bitsPerTone=integers[2];
         int encoding=integers[3];
+        int errorDet=integers[4];
+        int errorDetBNum=integers[5];
         BitFrequencyConverter bitConverter=new BitFrequencyConverter(startFreq, endFreq, bitsPerTone);
 
         byte[] encodedMessage=message;
 
         if(encoding==1) {
-            encodedMessage = null;
-            /*
-            InputStream in = new ByteArrayInputStream(message);
+            InputStream in = new ByteArrayInputStream(encodedMessage);
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             BitOutputStream bitOut = new BitOutputStream(out);
-
             try {
                 AdaptiveHuffmanCompress.compress(in, bitOut);
                 bitOut.close();
                 encodedMessage = out.toByteArray();
             } catch (IOException e) {
                 e.printStackTrace();
-            }
-
-            if (encodedMessage == null) {
                 return null;
-            }*/
-
+            }
+        }
+        if(errorDet==1){
             EncoderDecoder encoder = new EncoderDecoder();
-            //final byte[] fec_payload;
             try {
-                encodedMessage = encoder.encodeData(message, 4);
+                encodedMessage = encoder.encodeData(encodedMessage, errorDetBNum);
             } catch (EncoderDecoder.DataTooLargeException e) {
+                e.printStackTrace();
                 return null;
             }
         }

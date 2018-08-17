@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory android:title="General">
+        <EditTextPreference
+            android:dialogTitle="Edit start frequency:"
+            android:key="StFrequency"
+            android:summary="Click to show a text entry dialog"
+            android:title="Start frequency"
+            android:inputType="number"/>
+
+        <EditTextPreference
+            android:dialogTitle="Edit start frequency:"
+            android:key="EndFrequency"
+            android:summary="Click to show a text entry dialog"
+
+            android:title="End frequency"
+            android:inputType="number"/>
+
+        <ListPreference
+            android:dialogTitle="Bits per tone:"
+            android:entries="@array/bits_per_tone"
+            android:entryValues="@array/bits_per_tone"
+            android:key="BitPerTone"
+            android:summary="Something"
+            android:title="Bits per tone" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="Encoding">
+        <CheckBoxPreference
+            android:title="Encoding"
+            android:summary="Adaptive Huffman"
+            android:key="Encoding"/>
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="Error correction">
+        <CheckBoxPreference
+            android:title="Error correction"
+            android:summary="Reed Solomon"
+            android:key="ErrDetection"/>
+
+        <ListPreference
+            android:dialogTitle="Bits per tone:"
+            android:entries="@array/error_corr_byte_num"
+            android:entryValues="@array/error_corr_byte_num"
+            android:key="ErrByteNum"
+            android:summary="Something"
+            android:title="Error detection byte number" />
+    </PreferenceCategory>
+</PreferenceScreen>

@@ -28,6 +28,8 @@ public class RecordTask extends AsyncTask<Integer, Double, Void> implements Call
     int EndFrequency;
     int BitPerTone;
     int Encoding;
+    int ErrorCheck;
+    int ErrorCheckByteNum;
 
     int bufferSizeInBytes = 0;       //JEDAN SHORT JE DVA BYTE 1024 short je 2048 byte
 
@@ -52,6 +54,8 @@ public class RecordTask extends AsyncTask<Integer, Double, Void> implements Call
         EndFrequency=integers[1];
         BitPerTone=integers[2];
         Encoding=integers[3];
+        ErrorCheck=integers[4];
+        ErrorCheckByteNum=integers[5];
 
         recordedArray=new ArrayList<ChunkElement>();
 
@@ -132,8 +136,15 @@ public class RecordTask extends AsyncTask<Integer, Double, Void> implements Call
         }
         byte[] readBytes=bitConverter.getReadBytes();
         try {
+            if(ErrorCheck==1){
+                EncoderDecoder encoder = new EncoderDecoder();
+                try {
+                    readBytes = encoder.decodeData(readBytes, ErrorCheckByteNum);
+                } catch (Exception e) {
+
+                }
+            }
             if(Encoding==1) {
-                /*
                 InputStream in = new ByteArrayInputStream(readBytes);
                 ByteArrayOutputStream out = new ByteArrayOutputStream();
                 try {
@@ -141,13 +152,6 @@ public class RecordTask extends AsyncTask<Integer, Double, Void> implements Call
                     readBytes = out.toByteArray();
                 } catch (IOException e) {
                     e.printStackTrace();
-                }*/
-                EncoderDecoder encoder = new EncoderDecoder();
-                //final byte[] fec_payload;
-                try {
-                    readBytes = encoder.decodeData(readBytes, 4);
-                } catch (Exception e) {
-
                 }
             }
             myString= new String(readBytes, "UTF-8");

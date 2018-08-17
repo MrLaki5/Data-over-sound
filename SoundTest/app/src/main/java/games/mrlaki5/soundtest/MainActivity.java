@@ -7,6 +7,7 @@ import android.media.AudioManager;
 import android.media.AudioTrack;
 import android.media.MediaPlayer;
 import android.os.Build;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -58,26 +59,28 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_main);
         ((SeekBar) findViewById(R.id.soundSlider)).setOnSeekBarChangeListener(soundSeekListener);
         //Load preferences
-        SharedPreferences preferences = getSharedPreferences("Settings", 0);
+        SharedPreferences preferences =PreferenceManager.getDefaultSharedPreferences(this);
         //If values in preferences dont exist (on first start), create them
         if(!preferences.contains(SettingsActivity.KEY_START_FREQUENCY)){
             SharedPreferences.Editor editor=preferences.edit();
             //Set shake treshold value
-            editor.putInt(SettingsActivity.KEY_START_FREQUENCY,
+            editor.putString(SettingsActivity.KEY_START_FREQUENCY,
                     SettingsActivity.DEF_START_FREQUENCY);
             //Set time value between two shake sensor events
-            editor.putInt(SettingsActivity.KEY_END_FREQUENCY,
+            editor.putString(SettingsActivity.KEY_END_FREQUENCY,
                     SettingsActivity.DEF_END_FREQUENCY);
             //Set value of sound volume
-            editor.putInt(SettingsActivity.KEY_BIT_PER_TONE,
+            editor.putString(SettingsActivity.KEY_BIT_PER_TONE,
                     SettingsActivity.DEF_BIT_PER_TONE);
-            editor.putInt(SettingsActivity.KEY_ENCODING,
+            editor.putBoolean(SettingsActivity.KEY_ENCODING,
                     SettingsActivity.DEF_ENCODING);
+            editor.putBoolean(SettingsActivity.KEY_ERROR_DETECTION,
+                    SettingsActivity.DEF_ERROR_DETECTION);
+            editor.putString(SettingsActivity.KEY_ERROR_BYTE_NUM,
+                    SettingsActivity.DEF_ERROR_BYTE_NUM);
             editor.commit();
         }
     }
@@ -123,16 +126,31 @@ public class MainActivity extends AppCompatActivity {
             ((TextView) view).setText("Stop");
             if(taskList==null){
                 TextView tw=findViewById(R.id.currFreq);
-                SharedPreferences preferences = getSharedPreferences("Settings", 0);
-                Integer[] tempArr= new Integer[4];
-                tempArr[0]=preferences.getInt(SettingsActivity.KEY_START_FREQUENCY,
-                        SettingsActivity.DEF_START_FREQUENCY);
-                tempArr[1]=preferences.getInt(SettingsActivity.KEY_END_FREQUENCY,
-                        SettingsActivity.DEF_END_FREQUENCY);
-                tempArr[2]=preferences.getInt(SettingsActivity.KEY_BIT_PER_TONE,
-                        SettingsActivity.DEF_BIT_PER_TONE);
-                tempArr[3]=preferences.getInt(SettingsActivity.KEY_ENCODING,
-                        SettingsActivity.DEF_ENCODING);
+                //SharedPreferences preferences = getSharedPreferences("Settings", 0);
+                Integer[] tempArr= new Integer[6];
+                SharedPreferences preferences =PreferenceManager.getDefaultSharedPreferences(this);
+                tempArr[0]=Integer.parseInt(preferences.getString(SettingsActivity.KEY_START_FREQUENCY,
+                        SettingsActivity.DEF_START_FREQUENCY));
+                tempArr[1]=Integer.parseInt(preferences.getString(SettingsActivity.KEY_END_FREQUENCY,
+                        SettingsActivity.DEF_END_FREQUENCY));
+                tempArr[2]=Integer.parseInt(preferences.getString(SettingsActivity.KEY_BIT_PER_TONE,
+                        SettingsActivity.DEF_BIT_PER_TONE));
+                if(preferences.getBoolean(SettingsActivity.KEY_ENCODING,
+                        SettingsActivity.DEF_ENCODING)){
+                    tempArr[3]=1;
+                }
+                else{
+                    tempArr[3]=0;
+                }
+                if(preferences.getBoolean(SettingsActivity.KEY_ERROR_DETECTION,
+                        SettingsActivity.DEF_ERROR_DETECTION)){
+                    tempArr[4]=1;
+                }
+                else{
+                    tempArr[4]=0;
+                }
+                tempArr[5]=Integer.parseInt(preferences.getString(SettingsActivity.KEY_ERROR_BYTE_NUM,
+                        SettingsActivity.DEF_ERROR_BYTE_NUM));
                 taskList=new RecordTask();
                 taskList.setTW(tw);
                 //taskList.execute();
@@ -158,16 +176,31 @@ public class MainActivity extends AppCompatActivity {
                 byte[] message=messageStr.getBytes("UTF-8");
                 buffSoundTask=new BufferSoundTask();
                 buffSoundTask.setBuffer(message);
-                Integer[] tempArr= new Integer[4];
-                SharedPreferences preferences = getSharedPreferences("Settings", 0);
-                tempArr[0]=preferences.getInt(SettingsActivity.KEY_START_FREQUENCY,
-                        SettingsActivity.DEF_START_FREQUENCY);
-                tempArr[1]=preferences.getInt(SettingsActivity.KEY_END_FREQUENCY,
-                        SettingsActivity.DEF_END_FREQUENCY);
-                tempArr[2]=preferences.getInt(SettingsActivity.KEY_BIT_PER_TONE,
-                        SettingsActivity.DEF_BIT_PER_TONE);
-                tempArr[3]=preferences.getInt(SettingsActivity.KEY_ENCODING,
-                        SettingsActivity.DEF_ENCODING);
+                Integer[] tempArr= new Integer[6];
+                //SharedPreferences preferences = getSharedPreferences("Settings", 0);
+                SharedPreferences preferences =PreferenceManager.getDefaultSharedPreferences(this);
+                tempArr[0]=Integer.parseInt(preferences.getString(SettingsActivity.KEY_START_FREQUENCY,
+                        SettingsActivity.DEF_START_FREQUENCY));
+                tempArr[1]=Integer.parseInt(preferences.getString(SettingsActivity.KEY_END_FREQUENCY,
+                        SettingsActivity.DEF_END_FREQUENCY));
+                tempArr[2]=Integer.parseInt(preferences.getString(SettingsActivity.KEY_BIT_PER_TONE,
+                        SettingsActivity.DEF_BIT_PER_TONE));
+                if(preferences.getBoolean(SettingsActivity.KEY_ENCODING,
+                        SettingsActivity.DEF_ENCODING)){
+                    tempArr[3]=1;
+                }
+                else{
+                    tempArr[3]=0;
+                }
+                if(preferences.getBoolean(SettingsActivity.KEY_ERROR_DETECTION,
+                        SettingsActivity.DEF_ERROR_DETECTION)){
+                    tempArr[4]=1;
+                }
+                else{
+                    tempArr[4]=0;
+                }
+                tempArr[5]=Integer.parseInt(preferences.getString(SettingsActivity.KEY_ERROR_BYTE_NUM,
+                        SettingsActivity.DEF_ERROR_BYTE_NUM));
                 buffSoundTask.execute(tempArr);
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
