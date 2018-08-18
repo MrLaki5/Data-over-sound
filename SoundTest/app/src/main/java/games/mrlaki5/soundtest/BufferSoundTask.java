@@ -4,6 +4,8 @@ import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
 import android.os.AsyncTask;
+import android.os.Build;
+import android.widget.ProgressBar;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -15,7 +17,7 @@ import games.mrlaki5.soundtest.AdaptiveHuffman.AdaptiveHuffmanCompress;
 import games.mrlaki5.soundtest.AdaptiveHuffman.BitOutputStream;
 import games.mrlaki5.soundtest.ReedSolomon.EncoderDecoder;
 
-public class BufferSoundTask extends AsyncTask<Integer, Void, Void> {
+public class BufferSoundTask extends AsyncTask<Integer, Integer, Void> {
 
     private boolean work=true;
 
@@ -27,9 +29,23 @@ public class BufferSoundTask extends AsyncTask<Integer, Void, Void> {
     private AudioTrack myTone=null;
 
     private byte[] message;
+    private ProgressBar progressBar=null;
+    private CallbackSendRec callbackSR;
 
     public void setBuffer(byte[] message){
         this.message=message;
+    }
+
+    public void setProgressBar(ProgressBar progressBar){
+        this.progressBar=progressBar;
+    }
+
+    public CallbackSendRec getCallbackSR() {
+        return callbackSR;
+    }
+
+    public void setCallbackSR(CallbackSendRec callbackSR) {
+        this.callbackSR = callbackSR;
     }
 
     @Override
@@ -41,6 +57,8 @@ public class BufferSoundTask extends AsyncTask<Integer, Void, Void> {
         int errorDet=integers[4];
         int errorDetBNum=integers[5];
         BitFrequencyConverter bitConverter=new BitFrequencyConverter(startFreq, endFreq, bitsPerTone);
+
+
 
         byte[] encodedMessage=message;
 
@@ -67,24 +85,56 @@ public class BufferSoundTask extends AsyncTask<Integer, Void, Void> {
             }
         }
         ArrayList<Integer> freqs=bitConverter.calculateFrequency(encodedMessage);
-
+        if(!work){
+            return null;
+        }
         bufferSize = AudioTrack.getMinBufferSize(sampleRate, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT);
         myTone = new AudioTrack(AudioManager.STREAM_MUSIC,
                 sampleRate, AudioFormat.CHANNEL_OUT_MONO,
                 AudioFormat.ENCODING_PCM_16BIT, bufferSize,
                 AudioTrack.MODE_STREAM);
         myTone.play();
+        int currProgress=0;
+        int allLength=freqs.size()*2+4;
         playTone((double)bitConverter.getHandshakeStartFreq(), durationSec);
+        publishProgress(((++currProgress)*100)/allLength);
         playTone((double)bitConverter.getHandshakeStartFreq(), durationSec);
+        publishProgress(((++currProgress)*100)/allLength);
         for (int freq: freqs) {
             //playTone((double)freq,durationSec);
             playTone((double)freq,durationSec/2);
+            publishProgress(((++currProgress)*100)/allLength);
             playTone((double)bitConverter.getHandshakeStartFreq(), durationSec);
+            publishProgress(((++currProgress)*100)/allLength);
+            if(!work){
+                myTone.release();
+                return null;
+            }
         }
         playTone((double)bitConverter.getHandshakeEndFreq(), durationSec);
+        publishProgress(((++currProgress)*100)/allLength);
         playTone((double)bitConverter.getHandshakeEndFreq(), durationSec);
+        publishProgress(((++currProgress)*100)/allLength);
         myTone.release();
         return null;
+    }
+
+    @Override
+    protected void onProgressUpdate(Integer... integers) {
+        super.onProgressUpdate(integers);
+        if(progressBar!=null) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                progressBar.setProgress(integers[0], true);
+            } else {
+                progressBar.setProgress(integers[0]);
+            }
+        }
+    }
+
+    @Override
+    protected void onPostExecute(Void aVoid) {
+        super.onPostExecute(aVoid);
+        callbackSR.actionDone(CallbackSendRec.SEND_ACTION);
     }
 
     public boolean isWork() {

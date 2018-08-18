@@ -6,12 +6,25 @@
     android:layout_height="match_parent"
     tools:context=".Chat.ChatActivity">
 
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:indeterminate="false"
+        android:max="100"
+        android:visibility="invisible"
+        android:progress="1" />
+
     <android.support.v7.widget.RecyclerView
         android:id="@+id/reyclerview_message_list"
         android:layout_width="0dp"
         android:layout_height="0dp"
         app:layout_constraintBottom_toTopOf="@+id/margineBox"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/progressBar"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent">
     </android.support.v7.widget.RecyclerView>
@@ -53,6 +66,18 @@
         <Button
             android:id="@+id/button_chatbox_send"
             android:text="SEND"
+            android:textSize="14dp"
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:onClick="sendMessage"
+            android:layout_width="64dp"
+            android:layout_height="48dp"
+            android:gravity="center"
+            android:layout_gravity="bottom" />
+
+        <Button
+            android:id="@+id/button_chatbox_listen"
+            android:text="LISTEN"
             android:textSize="14dp"
             android:background="?attr/selectableItemBackground"
             android:clickable="true"

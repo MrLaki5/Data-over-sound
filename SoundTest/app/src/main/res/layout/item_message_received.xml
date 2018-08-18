@@ -12,12 +12,12 @@
     <TextView
         android:id="@+id/text_message_body"
         android:text="hello, hello!"
-        android:background="@drawable/rounded_rectangle_red"
+        android:background="@drawable/rounded_rectangle_grey"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:maxWidth="240dp"
         android:padding="8dp"
-        android:textColor="#ffffff"
+        android:textColor="#000000"
         app:layout_constraintTop_toTopOf="parent"
         android:layout_marginLeft="8dp"
         app:layout_constraintLeft_toLeftOf="parent" />
