@@ -2,21 +2,19 @@ package games.mrlaki5.soundtest;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.media.AudioFormat;
-import android.media.AudioManager;
-import android.media.AudioTrack;
 import android.media.MediaPlayer;
 import android.os.Build;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
 import java.io.UnsupportedEncodingException;
+
+import games.mrlaki5.soundtest.Chat.ChatActivity;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -210,6 +208,11 @@ public class MainActivity extends AppCompatActivity {
 
     public void settings(View view) {
         Intent intent= new Intent(MainActivity.this, SettingsActivity.class);
+        startActivity(intent);
+    }
+
+    public void chatStart(View view) {
+        Intent intent= new Intent(MainActivity.this, ChatActivity.class);
         startActivity(intent);
     }
 }

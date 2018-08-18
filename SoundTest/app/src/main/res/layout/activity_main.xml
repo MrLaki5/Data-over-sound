@@ -75,6 +75,15 @@
         android:layout_centerHorizontal="true"
         android:onClick="settings"/>
 
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Chat"
+        android:id="@+id/chatButt"
+        android:layout_below="@id/settingsButt"
+        android:layout_centerHorizontal="true"
+        android:onClick="chatStart"/>
+
     <EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
