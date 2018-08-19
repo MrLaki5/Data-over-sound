@@ -13,7 +13,7 @@
         android:text="Chat"
         android:id="@+id/chatButt"
         android:onClick="chatStart"
-        android:background="#D3D3D3"
+        android:background="#e6e6e6"
         android:textColor="#000000"
         android:textSize="20dp"/>
 
@@ -35,7 +35,7 @@
         android:text="Settings"
         android:id="@+id/settingsButt"
         android:onClick="settings"
-        android:background="#D3D3D3"
+        android:background="#e6e6e6"
         android:textColor="#000000"
         android:textSize="20dp"/>
 
