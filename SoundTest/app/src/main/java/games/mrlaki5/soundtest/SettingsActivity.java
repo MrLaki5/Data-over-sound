@@ -3,7 +3,9 @@ package games.mrlaki5.soundtest;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.database.sqlite.SQLiteDatabase;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -16,7 +18,11 @@ import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.RingtonePreference;
 import android.text.TextUtils;
+import android.view.Menu;
 import android.view.MenuItem;
+
+import games.mrlaki5.soundtest.Chat.Database.DbHelper;
+import games.mrlaki5.soundtest.Chat.Database.MessagesTableEntry;
 
 public class SettingsActivity extends AppCompatPreferenceActivity {
 
@@ -51,6 +57,10 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 
         // load settings fragment
         getFragmentManager().beginTransaction().replace(android.R.id.content, new MainPreferenceFragment()).commit();
+        android.support.v7.app.ActionBar ab=getSupportActionBar();
+        if(ab!=null){
+            ab.setTitle("Settings");
+        }
     }
 
     public static class MainPreferenceFragment extends PreferenceFragment {
@@ -75,8 +85,39 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         if (item.getItemId() == android.R.id.home) {
             onBackPressed();
         }
+        else{
+            if(item.getItemId() == R.id.settings_menu_default_settings){
+                SharedPreferences preferences =PreferenceManager.getDefaultSharedPreferences(this);
+                SharedPreferences.Editor editor=preferences.edit();
+                //Set shake treshold value
+                editor.putString(SettingsActivity.KEY_START_FREQUENCY,
+                        SettingsActivity.DEF_START_FREQUENCY);
+                //Set time value between two shake sensor events
+                editor.putString(SettingsActivity.KEY_END_FREQUENCY,
+                        SettingsActivity.DEF_END_FREQUENCY);
+                //Set value of sound volume
+                editor.putString(SettingsActivity.KEY_BIT_PER_TONE,
+                        SettingsActivity.DEF_BIT_PER_TONE);
+                editor.putBoolean(SettingsActivity.KEY_ENCODING,
+                        SettingsActivity.DEF_ENCODING);
+                editor.putBoolean(SettingsActivity.KEY_ERROR_DETECTION,
+                        SettingsActivity.DEF_ERROR_DETECTION);
+                editor.putString(SettingsActivity.KEY_ERROR_BYTE_NUM,
+                        SettingsActivity.DEF_ERROR_BYTE_NUM);
+                editor.commit();
+                getFragmentManager().beginTransaction().replace(android.R.id.content, new MainPreferenceFragment()).commit();
+                return true;
+            }
+        }
         return super.onOptionsItemSelected(item);
     }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.settings_menu, menu);
+        return true;
+    }
+
 
     private static void bindPreferenceSummaryToValue(Preference preference) {
         preference.setOnPreferenceChangeListener(sBindPreferenceSummaryToValueListener);
