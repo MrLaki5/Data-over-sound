@@ -1,103 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    tools:context=".MainActivity"
+    android:orientation="vertical">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="20dp"
-        android:textStyle="bold"
-        android:text="10kHz"
-        android:layout_above="@id/soundSlider"
-        android:layout_centerHorizontal="true"
-        android:id="@+id/soundFrequency"/>
-
-    <SeekBar
-        android:id="@+id/soundSlider"
-        style="@style/Widget.AppCompat.SeekBar.Discrete"
+    <Button
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="20dp"
-        android:layout_marginTop="10dp"
-        android:max="20"
-        android:min="0"
-        android:progress="10"
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true"/>
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Play"
-        android:id="@+id/playButt"
-        android:layout_below="@id/soundSlider"
-        android:layout_centerHorizontal="true"
-        android:onClick="soundPlayStop"/>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Frequency meter:"
-        android:textSize="20dp"
-        android:textStyle="bold"
-        android:layout_centerHorizontal="true"
-        android:id="@+id/meterText"/>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="10000Hz"
-        android:textSize="20dp"
-        android:textStyle="bold"
-        android:id="@+id/currFreq"
-        android:layout_centerHorizontal="true"
-        android:layout_below="@+id/meterText"/>
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Listen"
-        android:id="@+id/listenButt"
-        android:layout_below="@id/currFreq"
-        android:layout_centerHorizontal="true"
-        android:onClick="soundListen"/>
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Settings"
-        android:id="@+id/settingsButt"
-        android:layout_below="@id/listenButt"
-        android:layout_centerHorizontal="true"
-        android:onClick="settings"/>
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:text="Chat"
         android:id="@+id/chatButt"
-        android:layout_below="@id/settingsButt"
-        android:layout_centerHorizontal="true"
-        android:onClick="chatStart"/>
-
-    <EditText
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/messageButt"
-        android:id="@+id/messageText"
-        android:hint="Message:"/>
+        android:onClick="chatStart"
+        android:background="#D3D3D3"
+        android:textColor="#000000"
+        android:textSize="20dp"/>
 
     <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Send message"
-        android:id="@+id/messageButt"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:onClick="soundMessage"/>
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:text="Data transfer"
+        android:id="@+id/dataBut"
+        android:onClick="dataStart"
+        android:textColor="#FFFFFF"
+        android:textSize="20dp"
+        android:background="#b01123"/>
 
-</RelativeLayout>
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:text="Settings"
+        android:id="@+id/settingsButt"
+        android:onClick="settings"
+        android:background="#D3D3D3"
+        android:textColor="#000000"
+        android:textSize="20dp"/>
+
+</LinearLayout>
