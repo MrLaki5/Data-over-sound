@@ -40,11 +40,13 @@ public class RecordTask extends AsyncTask<Integer, Double, Void> implements Call
 
     private Recorder recorder=null;
 
-    private TextView refreshTW;
+    //private TextView refreshTW;
 
     private String myString="";
 
     private BitFrequencyConverter bitConverter;
+
+    private CallbackSendRec callbackRet;
 
     @Override
     protected Void doInBackground(Integer... integers) {
@@ -135,28 +137,30 @@ public class RecordTask extends AsyncTask<Integer, Double, Void> implements Call
             }
         }
         byte[] readBytes=bitConverter.getReadBytes();
-        try {
-            if(ErrorCheck==1){
-                EncoderDecoder encoder = new EncoderDecoder();
-                try {
-                    readBytes = encoder.decodeData(readBytes, ErrorCheckByteNum);
-                } catch (Exception e) {
+        if(readBytes!=null) {
+            try {
+                if (ErrorCheck == 1) {
+                    EncoderDecoder encoder = new EncoderDecoder();
+                    try {
+                        readBytes = encoder.decodeData(readBytes, ErrorCheckByteNum);
+                    } catch (Exception e) {
 
+                    }
                 }
-            }
-            if(Encoding==1) {
-                InputStream in = new ByteArrayInputStream(readBytes);
-                ByteArrayOutputStream out = new ByteArrayOutputStream();
-                try {
-                    AdaptiveHuffmanDecompress.decompress(new BitInputStream(in), out);
-                    readBytes = out.toByteArray();
-                } catch (IOException e) {
-                    e.printStackTrace();
+                if (Encoding == 1) {
+                    InputStream in = new ByteArrayInputStream(readBytes);
+                    ByteArrayOutputStream out = new ByteArrayOutputStream();
+                    try {
+                        AdaptiveHuffmanDecompress.decompress(new BitInputStream(in), out);
+                        readBytes = out.toByteArray();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
+                myString = new String(readBytes, "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
             }
-            myString= new String(readBytes, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
         }
         publishProgress(10.0);
         return null;
@@ -217,20 +221,28 @@ public class RecordTask extends AsyncTask<Integer, Double, Void> implements Call
         bufferSizeInBytes=size;
     }
 
+    public CallbackSendRec getCallbackRet() {
+        return callbackRet;
+    }
+
+    public void setCallbackRet(CallbackSendRec callbackRet) {
+        this.callbackRet = callbackRet;
+    }
+
     @Override
     protected void onProgressUpdate(Double... values) {
         super.onProgressUpdate(values);
         if(work){
-            refreshTW.setText(""+values[0]+"Hz");
+            //refreshTW.setText(""+values[0]+"Hz");
         }
         else{
-            refreshTW.setText(myString);
+            //refreshTW.setText(myString);
         }
     }
 
-    public void setTW(TextView tw){
-        this.refreshTW=tw;
-    }
+    //public void setTW(TextView tw){
+     //   this.refreshTW=tw;
+    //}
 
     public void setWorkFalse(){
         if(recorder!=null){
@@ -240,4 +252,11 @@ public class RecordTask extends AsyncTask<Integer, Double, Void> implements Call
         this.work=false;
     }
 
+    @Override
+    protected void onPostExecute(Void aVoid) {
+        super.onPostExecute(aVoid);
+        if(callbackRet!=null) {
+            callbackRet.actionDone(CallbackSendRec.RECEIVE_ACTION, myString);
+        }
+    }
 }

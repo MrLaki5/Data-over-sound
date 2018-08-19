@@ -150,7 +150,7 @@ public class MainActivity extends AppCompatActivity {
                 tempArr[5]=Integer.parseInt(preferences.getString(SettingsActivity.KEY_ERROR_BYTE_NUM,
                         SettingsActivity.DEF_ERROR_BYTE_NUM));
                 taskList=new RecordTask();
-                taskList.setTW(tw);
+                //taskList.setTW(tw);
                 //taskList.execute();
                 if (Build.VERSION.SDK_INT >= 11) {
                     taskList.executeOnExecutor(taskList.THREAD_POOL_EXECUTOR, tempArr);

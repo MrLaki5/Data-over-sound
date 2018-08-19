@@ -134,7 +134,7 @@ public class BufferSoundTask extends AsyncTask<Integer, Integer, Void> {
     @Override
     protected void onPostExecute(Void aVoid) {
         super.onPostExecute(aVoid);
-        callbackSR.actionDone(CallbackSendRec.SEND_ACTION);
+        callbackSR.actionDone(CallbackSendRec.SEND_ACTION, null);
     }
 
     public boolean isWork() {
