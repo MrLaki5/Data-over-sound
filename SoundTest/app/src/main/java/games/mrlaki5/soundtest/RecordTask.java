@@ -22,29 +22,25 @@ import games.mrlaki5.soundtest.ReedSolomon.ReedSolomonException;
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 import static android.os.Process.THREAD_PRIORITY_MORE_FAVORABLE;
 
-public class RecordTask extends AsyncTask<Integer, Double, Void> implements Callback{
+public class RecordTask extends AsyncTask<Integer, Void, Void> implements Callback{
 
-    int StartFrequency;
-    int EndFrequency;
-    int BitPerTone;
-    int Encoding;
-    int ErrorCheck;
-    int ErrorCheckByteNum;
+    private int StartFrequency;
+    private int EndFrequency;
+    private int BitPerTone;
+    private int Encoding;
+    private int ErrorCheck;
+    private int ErrorCheckByteNum;
 
-    int bufferSizeInBytes = 0;       //JEDAN SHORT JE DVA BYTE 1024 short je 2048 byte
+    private int bufferSizeInBytes = 0;       //JEDAN SHORT JE DVA BYTE 1024 short je 2048 byte
 
     private boolean work=true;
 
     private ArrayList<ChunkElement> recordedArray;
-    private String recordedArraySem="Semaphore";
+    final private String recordedArraySem="Semaphore";
 
     private Recorder recorder=null;
 
-    //private TextView refreshTW;
-
     private String myString="";
-
-    private BitFrequencyConverter bitConverter;
 
     private CallbackSendRec callbackRet;
 
@@ -61,11 +57,11 @@ public class RecordTask extends AsyncTask<Integer, Double, Void> implements Call
 
         recordedArray=new ArrayList<ChunkElement>();
 
-        bitConverter=new BitFrequencyConverter(StartFrequency, EndFrequency, BitPerTone);
+        BitFrequencyConverter bitConverter = new BitFrequencyConverter(StartFrequency, EndFrequency, BitPerTone);
 
-        int HalfPadd=bitConverter.getPadding()/2;
-        int HandshakeStart=bitConverter.getHandshakeStartFreq();
-        int HandshakeEnd=bitConverter.getHandshakeEndFreq();
+        int HalfPadd= bitConverter.getPadding()/2;
+        int HandshakeStart= bitConverter.getHandshakeStartFreq();
+        int HandshakeEnd= bitConverter.getHandshakeEndFreq();
         //int HandshakePadd=bitConverter.getHandshakePadding();
 
         recorder=new Recorder();
@@ -96,13 +92,13 @@ public class RecordTask extends AsyncTask<Integer, Double, Void> implements Call
                 recordedArraySem.notifyAll();
             }
             double currNum=calculate(tempElem.getBuffer());
-            publishProgress(currNum);
 
             if(listeningStarted==0){
                 if((currNum>(HandshakeStart-HalfPadd)) && (currNum<(HandshakeStart+HalfPadd))){
                     startCounter++;
                     if(startCounter>=2){
                         listeningStarted=1;
+                        publishProgress();
                     }
                 }
                 else{
@@ -136,38 +132,27 @@ public class RecordTask extends AsyncTask<Integer, Double, Void> implements Call
                 }
             }
         }
-        byte[] readBytes=bitConverter.getReadBytes();
-        if(readBytes!=null) {
-            try {
-                if (ErrorCheck == 1) {
-                    EncoderDecoder encoder = new EncoderDecoder();
-                    try {
-                        readBytes = encoder.decodeData(readBytes, ErrorCheckByteNum);
-                    } catch (Exception e) {
-
-                    }
-                }
-                if (Encoding == 1) {
-                    InputStream in = new ByteArrayInputStream(readBytes);
-                    ByteArrayOutputStream out = new ByteArrayOutputStream();
-                    try {
-                        AdaptiveHuffmanDecompress.decompress(new BitInputStream(in), out);
-                        readBytes = out.toByteArray();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-                myString = new String(readBytes, "UTF-8");
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
+        byte[] readBytes= bitConverter.getReadBytes();
+        try {
+            if (ErrorCheck == 1) {
+                EncoderDecoder encoder = new EncoderDecoder();
+                readBytes = encoder.decodeData(readBytes, ErrorCheckByteNum);
             }
+            if (Encoding == 1) {
+                InputStream in = new ByteArrayInputStream(readBytes);
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
+                AdaptiveHuffmanDecompress.decompress(new BitInputStream(in), out);
+                readBytes = out.toByteArray();
+            }
+            myString = new String(readBytes, "UTF-8");
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        publishProgress(10.0);
         return null;
     }
 
     //Method for calculating frequency with highest amplitude from sound sample
-    public double calculate(byte[] buffer) {
+    private double calculate(byte[] buffer) {
         Complex[] fftTempArray1= new Complex[1024];
         int tempI=-1;
         //Convert sound sample from byte to Complex array
@@ -229,21 +214,6 @@ public class RecordTask extends AsyncTask<Integer, Double, Void> implements Call
         this.callbackRet = callbackRet;
     }
 
-    @Override
-    protected void onProgressUpdate(Double... values) {
-        super.onProgressUpdate(values);
-        if(work){
-            //refreshTW.setText(""+values[0]+"Hz");
-        }
-        else{
-            //refreshTW.setText(myString);
-        }
-    }
-
-    //public void setTW(TextView tw){
-     //   this.refreshTW=tw;
-    //}
-
     public void setWorkFalse(){
         if(recorder!=null){
             recorder.stop();
@@ -257,6 +227,14 @@ public class RecordTask extends AsyncTask<Integer, Double, Void> implements Call
         super.onPostExecute(aVoid);
         if(callbackRet!=null) {
             callbackRet.actionDone(CallbackSendRec.RECEIVE_ACTION, myString);
+        }
+    }
+
+    @Override
+    protected void onProgressUpdate(Void... values) {
+        super.onProgressUpdate(values);
+        if(callbackRet!=null){
+            callbackRet.receivingSomething();
         }
     }
 }

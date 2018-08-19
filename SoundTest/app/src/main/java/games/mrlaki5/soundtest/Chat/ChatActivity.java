@@ -14,6 +14,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
@@ -35,10 +37,12 @@ public class ChatActivity extends AppCompatActivity implements CallbackSendRec{
 
     private RecyclerView mMessageRecycler;
     private MessageListAdapter mMessageAdapter;
+    private LinearLayoutManager mManager;
     private ProgressBar sendingBar;
 
     private boolean isSending=false;
     private boolean isListening=false;
+    private boolean isReceiving=false;
     private BufferSoundTask sendTask=null;
     private RecordTask listenTask=null;
     private String sendText;
@@ -49,6 +53,11 @@ public class ChatActivity extends AppCompatActivity implements CallbackSendRec{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
+
+        android.support.v7.app.ActionBar ab=getSupportActionBar();
+        if(ab!=null){
+            ab.setTitle("Chat");
+        }
 
         sendingBar=((ProgressBar) findViewById(R.id.progressBar));
 
@@ -78,12 +87,51 @@ public class ChatActivity extends AppCompatActivity implements CallbackSendRec{
         mMessageRecycler = (RecyclerView) findViewById(R.id.reyclerview_message_list);
         mMessageAdapter = new MessageListAdapter(this, messageList);
         mMessageRecycler.setAdapter(mMessageAdapter);
-        LinearLayoutManager manager=new LinearLayoutManager(this);
-        manager.setStackFromEnd(true);
-        mMessageRecycler.setLayoutManager(manager);
+        mManager=new LinearLayoutManager(this);
+        mManager.setStackFromEnd(true);
+        mMessageRecycler.setLayoutManager(mManager);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.chat_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if(item.getItemId() == R.id.chat_menu_clear_chat){
+            SQLiteDatabase db=new DbHelper(this).getWritableDatabase();
+            db.delete(MessagesTableEntry.TABLE_NAME, null, null);
+            messageList.clear();
+            mMessageAdapter.notifyDataSetChanged();
+        }
+        else {
+            return super.onOptionsItemSelected(item);
+        }
+        return true;
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if(listenTask!=null){
+            isListening=false;
+            listenTask.setWorkFalse();
+        }
+        if(sendTask!=null){
+            isSending=false;
+            sendTask.setWorkFalse();
+        }
     }
 
     public void sendMessage(View view) {
+        if(isListening){
+            stopListening();
+            if(listenTask!=null){
+                listenTask.setWorkFalse();
+            }
+        }
         if(!isSending) {
             sendText = ((TextView) findViewById(R.id.edittext_chatbox)).getText().toString();
             if (!sendText.isEmpty() && !sendText.equals(" ")) {
@@ -129,6 +177,7 @@ public class ChatActivity extends AppCompatActivity implements CallbackSendRec{
 
             messageList.add(new Message(sendText, 0));
             mMessageAdapter.notifyDataSetChanged();
+            mManager.smoothScrollToPosition(mMessageRecycler, null, mMessageAdapter.getItemCount());
         }
         else{
             if(CallbackSendRec.RECEIVE_ACTION==srFlag && isListening){
@@ -143,9 +192,18 @@ public class ChatActivity extends AppCompatActivity implements CallbackSendRec{
 
                     messageList.add(new Message(message, 1));
                     mMessageAdapter.notifyDataSetChanged();
+                    mManager.smoothScrollToPosition(mMessageRecycler, null, mMessageAdapter.getItemCount());
                 }
             }
         }
+    }
+
+    @Override
+    public void receivingSomething() {
+        messageList.add(new Message("Receiving message...", 2));
+        mMessageAdapter.notifyDataSetChanged();
+        mManager.smoothScrollToPosition(mMessageRecycler, null, mMessageAdapter.getItemCount());
+        isReceiving=true;
     }
 
     private void stopSending(){
@@ -156,11 +214,16 @@ public class ChatActivity extends AppCompatActivity implements CallbackSendRec{
         else{
             sendingBar.setProgress(1);
         }
-        sendingBar.setVisibility(View.INVISIBLE);
+        sendingBar.setVisibility(View.GONE);
         isSending=false;
     }
 
     private void stopListening(){
+        if(isReceiving){
+            messageList.remove(messageList.size()-1);
+            mMessageAdapter.notifyDataSetChanged();
+            isReceiving=false;
+        }
         ((Button) findViewById(R.id.button_chatbox_listen)).setText("LISTEN");
         isListening=false;
     }

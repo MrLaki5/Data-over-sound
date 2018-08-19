@@ -1,11 +1,14 @@
 package games.mrlaki5.soundtest.Chat;
 
 import android.content.Context;
+import android.graphics.Typeface;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import org.w3c.dom.Text;
 
 import java.util.List;
 
@@ -14,6 +17,7 @@ import games.mrlaki5.soundtest.R;
 public class MessageListAdapter extends RecyclerView.Adapter {
     private static final int VIEW_TYPE_MESSAGE_SENT = 1;
     private static final int VIEW_TYPE_MESSAGE_RECEIVED = 2;
+    private static final int VIEW_TYPE_MESSAGE_RECEIVED_BOLD = 3;
 
     private Context mContext;
     private List<Message> mMessageList;
@@ -33,12 +37,20 @@ public class MessageListAdapter extends RecyclerView.Adapter {
     public int getItemViewType(int position) {
         Message message = mMessageList.get(position);
 
-        if (message.getUser() == 0) {
+        int currUser=message.getUser();
+
+        if (currUser == 0) {
             // If the current user is the sender of the message
             return VIEW_TYPE_MESSAGE_SENT;
         } else {
+            if (currUser == 1) {
+                return VIEW_TYPE_MESSAGE_RECEIVED;
+            }
+            else{
+                return VIEW_TYPE_MESSAGE_RECEIVED_BOLD;
+            }
             // If some other user sent the message
-            return VIEW_TYPE_MESSAGE_RECEIVED;
+
         }
     }
 
@@ -55,8 +67,13 @@ public class MessageListAdapter extends RecyclerView.Adapter {
             view = LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.item_message_received, parent, false);
             return new ReceivedMessageHolder(view);
+        } else if (viewType == VIEW_TYPE_MESSAGE_RECEIVED_BOLD) {
+            view = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.item_message_received, parent, false);
+            TextView tw=((TextView) view.findViewById(R.id.text_message_body));
+            tw.setTypeface(null, Typeface.BOLD_ITALIC);
+            return new ReceivedMessageHolder(view);
         }
-
         return null;
     }
 
@@ -71,6 +88,10 @@ public class MessageListAdapter extends RecyclerView.Adapter {
                 break;
             case VIEW_TYPE_MESSAGE_RECEIVED:
                 ((ReceivedMessageHolder) holder).bind(message);
+                break;
+            case VIEW_TYPE_MESSAGE_RECEIVED_BOLD:
+                ((ReceivedMessageHolder) holder).bind(message);
+                break;
         }
     }
 

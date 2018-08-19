@@ -16,7 +16,7 @@
         app:layout_constraintRight_toRightOf="parent"
         android:indeterminate="false"
         android:max="100"
-        android:visibility="invisible"
+        android:visibility="gone"
         android:progress="1" />
 
     <android.support.v7.widget.RecyclerView
