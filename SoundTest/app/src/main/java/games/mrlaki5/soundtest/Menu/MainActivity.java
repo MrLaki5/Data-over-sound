@@ -1,20 +1,16 @@
-package games.mrlaki5.soundtest;
+package games.mrlaki5.soundtest.Menu;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.media.MediaPlayer;
-import android.os.Build;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.EditText;
-import android.widget.SeekBar;
-import android.widget.TextView;
-
-import java.io.UnsupportedEncodingException;
 
 import games.mrlaki5.soundtest.Chat.ChatActivity;
+import games.mrlaki5.soundtest.DataTransfer.DataTransferActivity;
+import games.mrlaki5.soundtest.R;
+import games.mrlaki5.soundtest.Settings.SettingsActivity;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -57,5 +53,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void dataStart(View view) {
+        Intent intent= new Intent(MainActivity.this, DataTransferActivity.class);
+        startActivity(intent);
     }
 }

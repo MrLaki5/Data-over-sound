@@ -1,4 +1,4 @@
-package games.mrlaki5.soundtest;
+package games.mrlaki5.soundtest.SoundClient.Sender;
 
 import android.media.AudioFormat;
 import android.media.AudioManager;
@@ -16,6 +16,8 @@ import java.util.ArrayList;
 import games.mrlaki5.soundtest.AdaptiveHuffman.AdaptiveHuffmanCompress;
 import games.mrlaki5.soundtest.AdaptiveHuffman.BitOutputStream;
 import games.mrlaki5.soundtest.ReedSolomon.EncoderDecoder;
+import games.mrlaki5.soundtest.SoundClient.BitFrequencyConverter;
+import games.mrlaki5.soundtest.SoundClient.CallbackSendRec;
 
 public class BufferSoundTask extends AsyncTask<Integer, Integer, Void> {
 

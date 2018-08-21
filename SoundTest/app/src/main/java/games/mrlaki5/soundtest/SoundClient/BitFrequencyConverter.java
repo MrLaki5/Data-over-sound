@@ -1,4 +1,4 @@
-package games.mrlaki5.soundtest;
+package games.mrlaki5.soundtest.SoundClient;
 
 import java.util.ArrayList;
 

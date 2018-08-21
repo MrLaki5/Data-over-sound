@@ -25,13 +25,13 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
-import games.mrlaki5.soundtest.BufferSoundTask;
-import games.mrlaki5.soundtest.CallbackSendRec;
+import games.mrlaki5.soundtest.SoundClient.Sender.BufferSoundTask;
+import games.mrlaki5.soundtest.SoundClient.CallbackSendRec;
 import games.mrlaki5.soundtest.Chat.Database.DbHelper;
 import games.mrlaki5.soundtest.Chat.Database.MessagesTableEntry;
 import games.mrlaki5.soundtest.R;
-import games.mrlaki5.soundtest.RecordTask;
-import games.mrlaki5.soundtest.SettingsActivity;
+import games.mrlaki5.soundtest.SoundClient.Receiver.RecordTask;
+import games.mrlaki5.soundtest.Settings.SettingsActivity;
 
 public class ChatActivity extends AppCompatActivity implements CallbackSendRec{
 

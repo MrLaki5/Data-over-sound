@@ -1,4 +1,4 @@
-package games.mrlaki5.soundtest;
+package games.mrlaki5.soundtest.SoundClient.Receiver;
 
 import android.media.AudioFormat;
 import android.media.AudioRecord;

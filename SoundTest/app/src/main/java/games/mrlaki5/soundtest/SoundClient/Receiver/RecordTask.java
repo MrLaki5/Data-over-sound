@@ -1,15 +1,12 @@
-package games.mrlaki5.soundtest;
+package games.mrlaki5.soundtest.SoundClient.Receiver;
 
 import android.os.AsyncTask;
 import android.os.Process;
 import android.util.Log;
-import android.widget.TextView;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 
 import games.mrlaki5.soundtest.AdaptiveHuffman.AdaptiveHuffmanDecompress;
@@ -17,12 +14,13 @@ import games.mrlaki5.soundtest.AdaptiveHuffman.BitInputStream;
 import games.mrlaki5.soundtest.FFT.Complex;
 import games.mrlaki5.soundtest.FFT.FFT;
 import games.mrlaki5.soundtest.ReedSolomon.EncoderDecoder;
-import games.mrlaki5.soundtest.ReedSolomon.ReedSolomonException;
+import games.mrlaki5.soundtest.SoundClient.BitFrequencyConverter;
+import games.mrlaki5.soundtest.SoundClient.CallbackSendRec;
 
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 import static android.os.Process.THREAD_PRIORITY_MORE_FAVORABLE;
 
-public class RecordTask extends AsyncTask<Integer, Void, Void> implements Callback{
+public class RecordTask extends AsyncTask<Integer, Void, Void> implements Callback {
 
     private int StartFrequency;
     private int EndFrequency;

@@ -1,4 +1,4 @@
-package games.mrlaki5.soundtest;
+package games.mrlaki5.soundtest.Settings;
 
 import android.content.res.Configuration;
 import android.os.Bundle;
