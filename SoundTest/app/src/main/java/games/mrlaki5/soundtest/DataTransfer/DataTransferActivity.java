@@ -18,15 +18,30 @@ import games.mrlaki5.soundtest.R;
 public class DataTransferActivity extends AppCompatActivity {
 
     File currentFolder;
+    File rootFolder;
     ListView myList;
 
     AdapterView.OnItemClickListener adapListener=new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             File[] files= currentFolder.listFiles();
-            if(files[position].isDirectory()) {
-                currentFolder = files[position];
-                loadAdapter();
+            if(!currentFolder.getAbsolutePath().equals(rootFolder.getAbsolutePath())){
+                if(position==0){
+                    currentFolder=currentFolder.getParentFile();
+                    loadAdapter();
+                }
+                else{
+                    if(files[position-1].isDirectory()) {
+                        currentFolder = files[position-1];
+                        loadAdapter();
+                    }
+                }
+            }
+            else{
+                if(files[position].isDirectory()) {
+                    currentFolder = files[position];
+                    loadAdapter();
+                }
             }
         }
     };
@@ -42,6 +57,7 @@ public class DataTransferActivity extends AppCompatActivity {
         }
         currentFolder= new File(Environment.getExternalStorageDirectory()
                 .getAbsolutePath());
+        rootFolder=currentFolder;
         myList=((ListView) findViewById(R.id.tempListView));
         loadAdapter();
         myList.setOnItemClickListener(adapListener);
@@ -69,9 +85,12 @@ public class DataTransferActivity extends AppCompatActivity {
 
         File[] files= currentFolder.listFiles();
         ArrayList<FileExplorerElement> folders=new ArrayList<FileExplorerElement>();
+        if(!currentFolder.getAbsolutePath().equals(rootFolder.getAbsolutePath())){
+            folders.add(new FileExplorerElement("Back", "", false));
+        }
         for(int i=0; i<files.length; i++){
             String fileNameTmp=files[i].getName();
-            String fileSizeTmp=""+files[i].length();
+            String fileSizeTmp=""+files[i].length()+"B";
             boolean isFolder=files[i].isDirectory();
             folders.add(new FileExplorerElement(fileNameTmp, fileSizeTmp, !isFolder));
         }
