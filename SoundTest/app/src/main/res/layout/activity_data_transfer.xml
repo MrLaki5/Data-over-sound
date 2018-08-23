@@ -1,9 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".DataTransfer.DataTransferActivity">
 
-</android.support.constraint.ConstraintLayout>
+    <ListView
+        android:layout_alignParentTop="true"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_above="@+id/tempButt"
+        android:id="@+id/tempListView"></ListView>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Go"
+        android:layout_above="@id/tempEditT"
+        android:id="@+id/tempButt"
+        android:onClick="someFun"/>
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:id="@+id/tempEditT"/>
+
+</RelativeLayout>

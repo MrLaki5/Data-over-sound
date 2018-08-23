@@ -10,23 +10,23 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:text="Chat"
-        android:id="@+id/chatButt"
-        android:onClick="chatStart"
-        android:background="#FEE5B3"
+        android:text="Data transfer"
+        android:id="@+id/dataBut"
+        android:onClick="dataStart"
         android:textColor="#000000"
-        android:textSize="20dp"/>
+        android:textSize="20dp"
+        android:background="#FEE5B3"/>
 
     <Button
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:text="Data transfer"
-        android:id="@+id/dataBut"
-        android:onClick="dataStart"
+        android:text="Chat"
+        android:id="@+id/chatButt"
+        android:onClick="chatStart"
+        android:background="#b01123"
         android:textColor="#FFFFFF"
-        android:textSize="20dp"
-        android:background="#b01123"/>
+        android:textSize="20dp"/>
 
     <Button
         android:layout_width="match_parent"
