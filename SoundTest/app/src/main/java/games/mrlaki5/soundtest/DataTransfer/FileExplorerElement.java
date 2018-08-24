@@ -4,11 +4,13 @@ public class FileExplorerElement {
     private String FileName;
     private String FileSize;
     private boolean isFile;
+    private boolean isBack;
 
-    public FileExplorerElement(String fileName, String fileSize, boolean isFile) {
+    public FileExplorerElement(String fileName, String fileSize, boolean isFile, boolean isBack) {
         FileName = fileName;
         FileSize = fileSize;
         this.isFile = isFile;
+        this.isBack=isBack;
     }
 
     public String getFileName() {
@@ -33,5 +35,13 @@ public class FileExplorerElement {
 
     public void setFile(boolean file) {
         isFile = file;
+    }
+
+    public boolean isBack() {
+        return isBack;
+    }
+
+    public void setBack(boolean back) {
+        isBack = back;
     }
 }

@@ -49,16 +49,24 @@ public class FileExplorerAdapter extends ArrayAdapter<FileExplorerElement>{
         FileExplorerElement Elem= myList.get(position);
         //Set data to newly created view
         ((TextView) listItem.findViewById(R.id.fileName)).setText(Elem.getFileName());
-        if(Elem.isFile()){
+        if(Elem.isBack()){
             ImageView iv = (ImageView) listItem.findViewById(R.id.fileImage);
-            iv.setImageResource(R.drawable.file_image);
-            ((TextView) listItem.findViewById(R.id.fileSize)).setText(Elem.getFileSize());
-        }
-        else{
-            ImageView iv = (ImageView) listItem.findViewById(R.id.fileImage);
-            iv.setImageResource(R.drawable.folder_image);
+            iv.setImageResource(R.drawable.folder_back);
             ((TextView) listItem.findViewById(R.id.fileSize)).setText("");
         }
+        else{
+            if(Elem.isFile()){
+                ImageView iv = (ImageView) listItem.findViewById(R.id.fileImage);
+                iv.setImageResource(R.drawable.file_image);
+                ((TextView) listItem.findViewById(R.id.fileSize)).setText(Elem.getFileSize());
+            }
+            else{
+                ImageView iv = (ImageView) listItem.findViewById(R.id.fileImage);
+                iv.setImageResource(R.drawable.folder_image);
+                ((TextView) listItem.findViewById(R.id.fileSize)).setText("");
+            }
+        }
+
 
         return listItem;
     }
