@@ -9,6 +9,7 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -28,8 +29,11 @@ public class DataTransferActivity extends AppCompatActivity {
     private AlertDialog myDialog;
 
     private File sendFile=null;
+    private File receiveFolder=null;
 
-    AdapterView.OnItemClickListener adapListener=new AdapterView.OnItemClickListener() {
+    boolean sendingData=false;
+
+    private AdapterView.OnItemClickListener adapSendListener=new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             File[] files= currentFolder.listFiles();
@@ -63,7 +67,7 @@ public class DataTransferActivity extends AppCompatActivity {
                     loadAdapter();
                 }
                 else{
-                    sendFile=files[position-1];
+                    sendFile=files[position];
                     ((TextView) findViewById(R.id.sendDataText)).setText(sendFile.getName());
                     ImageView iv = (ImageView) findViewById(R.id.sendDataImage);
                     iv.setImageResource(R.drawable.file_image);
@@ -78,6 +82,47 @@ public class DataTransferActivity extends AppCompatActivity {
         }
     };
 
+    private AdapterView.OnItemClickListener adapReceiveListener=new AdapterView.OnItemClickListener() {
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            File[] files= currentFolder.listFiles();
+            if(!currentFolder.getAbsolutePath().equals(rootFolder.getAbsolutePath())){
+                if(position==0){
+                    currentFolder=currentFolder.getParentFile();
+                    loadAdapter();
+                }
+                else{
+                    if(files[position-1].isDirectory()) {
+                        currentFolder = files[position-1];
+                        loadAdapter();
+                    }
+                }
+            }
+            else{
+                if(files[position].isDirectory()) {
+                    currentFolder = files[position];
+                    loadAdapter();
+                }
+            }
+        }
+    };
+
+    private View.OnClickListener receiveExplorerButtonListener=new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            receiveFolder=currentFolder;
+            ((TextView) findViewById(R.id.receiveDataText)).setText(receiveFolder.getName());
+            ImageView iv = (ImageView) findViewById(R.id.receiveDataImage);
+            iv.setImageResource(R.drawable.folder_image);
+            ((Button) findViewById(R.id.receiveDataButt)).setVisibility(View.VISIBLE);
+            if (myDialog != null){
+                myDialog.dismiss();
+                myDialog = null;
+                myView=null;
+            }
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -87,9 +132,7 @@ public class DataTransferActivity extends AppCompatActivity {
         if(ab!=null){
             ab.setTitle("Data transfer");
         }
-        //myList=((ListView) findViewById(R.id.tempListView));
-        //loadAdapter();
-        //myList.setOnItemClickListener(adapListener);
+
     }
 
     public void browseFileExplorer(View view) {
@@ -102,12 +145,33 @@ public class DataTransferActivity extends AppCompatActivity {
         myView= getLayoutInflater().inflate(R.layout.dialog_file_explorer, null);
         //Add to buttons on dialog view click listeners
         myList=((ListView) myView.findViewById(R.id.dialogFExFilesList));
-        myList.setOnItemClickListener(adapListener);
+        myList.setOnItemClickListener(adapSendListener);
         loadAdapter();
         //Set view of dialog
         mBulder.setView(myView);
         //Create and show dialog
         mBulder.setMessage("Choose file:");
+        myDialog=mBulder.create();
+        myDialog.show();
+    }
+
+    public void browseFolderExplorer(View view){
+        currentFolder= new File(Environment.getExternalStorageDirectory()
+                .getAbsolutePath());
+        rootFolder=currentFolder;
+        //Create dialog
+        AlertDialog.Builder mBulder= new AlertDialog.Builder(this);
+        //Load dialog view
+        myView= getLayoutInflater().inflate(R.layout.dialog_folder_explorer, null);
+        //Add to buttons on dialog view click listeners
+        myList=((ListView) myView.findViewById(R.id.dialogFolderExFilesList));
+        myList.setOnItemClickListener(adapReceiveListener);
+        ((Button) myView.findViewById(R.id.dialogFolderExButton)).setOnClickListener(receiveExplorerButtonListener);
+        loadAdapter();
+        //Set view of dialog
+        mBulder.setView(myView);
+        //Create and show dialog
+        mBulder.setMessage("Choose folder:");
         myDialog=mBulder.create();
         myDialog.show();
     }
@@ -138,7 +202,25 @@ public class DataTransferActivity extends AppCompatActivity {
     }
 
     public void sendData(View view) {
-        ((ProgressBar) findViewById(R.id.sendDataProgressBar)).setVisibility(View.VISIBLE);
-        ((Button) view).setText("STOP");
+        if(sendFile==null){
+            return;
+        }
+        if(!sendingData) {
+            sendingData=true;
+            ((ProgressBar) findViewById(R.id.sendDataProgressBar)).setVisibility(View.VISIBLE);
+            ((LinearLayout) findViewById(R.id.sendDataField)).setClickable(false);
+            ((Button) view).setText("STOP");
+
+        }
+        else{
+            stopSend();
+        }
+    }
+
+    private void stopSend(){
+        sendingData=false;
+        ((ProgressBar) findViewById(R.id.sendDataProgressBar)).setVisibility(View.INVISIBLE);
+        ((LinearLayout) findViewById(R.id.sendDataField)).setClickable(true);
+        ((Button) findViewById(R.id.sendDataButt)).setText("SEND");
     }
 }

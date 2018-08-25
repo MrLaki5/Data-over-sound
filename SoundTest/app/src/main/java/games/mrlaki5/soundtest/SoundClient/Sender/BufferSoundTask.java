@@ -12,6 +12,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import games.mrlaki5.soundtest.AdaptiveHuffman.AdaptiveHuffmanCompress;
 import games.mrlaki5.soundtest.AdaptiveHuffman.BitOutputStream;
@@ -50,6 +52,12 @@ public class BufferSoundTask extends AsyncTask<Integer, Integer, Void> {
         this.callbackSR = callbackSR;
     }
 
+    private byte[] concatenateTwoArrays(final byte[] array1, byte[] array2) {
+        byte[] joinedArray = Arrays.copyOf(array1, array1.length + array2.length);
+        System.arraycopy(array2, 0, joinedArray, array1.length, array2.length);
+        return joinedArray;
+    }
+
     @Override
     protected Void doInBackground(Integer... integers) {
         int startFreq=integers[0];
@@ -78,14 +86,40 @@ public class BufferSoundTask extends AsyncTask<Integer, Integer, Void> {
             }
         }
         if(errorDet==1){
-            EncoderDecoder encoder = new EncoderDecoder();
-            try {
-                encodedMessage = encoder.encodeData(encodedMessage, errorDetBNum);
-            } catch (EncoderDecoder.DataTooLargeException e) {
-                e.printStackTrace();
-                return null;
+
+            List<byte[]> tempList=new ArrayList<byte[]>();
+            int startPos=0;
+            int endPos=256-errorDetBNum;
+            int bytesLeft=encodedMessage.length;
+            while((bytesLeft+errorDetBNum)>256){
+                byte[] tempArr=Arrays.copyOfRange(encodedMessage, startPos, endPos);
+                tempList.add(tempArr);
+                startPos=endPos;
+                endPos=startPos+256-errorDetBNum;
+                bytesLeft-=(256-errorDetBNum);
             }
+            byte[] tempArr=Arrays.copyOfRange(encodedMessage, startPos, encodedMessage.length);
+            tempList.add(tempArr);
+            EncoderDecoder encoder = new EncoderDecoder();
+
+            encodedMessage=null;
+            for(int i=0; i<tempList.size(); i++){
+                try {
+                    tempArr = encoder.encodeData(tempList.get(i), errorDetBNum);
+                    if(encodedMessage==null){
+                        encodedMessage=tempArr;
+                    }
+                    else{
+                        encodedMessage=concatenateTwoArrays(encodedMessage, tempArr);
+                    }
+                } catch (EncoderDecoder.DataTooLargeException e) {
+                    e.printStackTrace();
+                    return null;
+                }
+            }
+
         }
+
         ArrayList<Integer> freqs=bitConverter.calculateFrequency(encodedMessage);
         if(!work){
             return null;

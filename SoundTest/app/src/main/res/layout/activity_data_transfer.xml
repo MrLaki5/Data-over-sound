@@ -41,6 +41,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:id="@+id/sendDataField"
             android:background="#b8b8b8"
             android:padding="10dp"
             android:orientation="horizontal"
@@ -121,11 +122,13 @@
             android:padding="10dp"
             android:orientation="horizontal"
             android:clickable="true"
-            android:focusable="true">
+            android:focusable="true"
+            android:onClick="browseFolderExplorer">
 
             <ImageView
                 android:layout_width="60dp"
                 android:layout_height="60dp"
+                android:id="@+id/receiveDataImage"
                 android:background="@drawable/folder_image_grey"/>
 
             <RelativeLayout
@@ -137,7 +140,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:textSize="15dp"
-                    android:text="Directory not selected"
+                    android:text="Folder not selected"
+                    android:id="@+id/receiveDataText"
                     android:layout_centerVertical="true"/>
 
             </RelativeLayout>
@@ -147,6 +151,7 @@
         <Button
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:id="@+id/receiveDataButt"
             android:layout_marginTop="10dp"
             android:background="#b8b8b8"
             android:visibility="invisible"
