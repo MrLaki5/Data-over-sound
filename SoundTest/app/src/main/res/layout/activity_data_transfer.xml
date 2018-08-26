@@ -105,15 +105,16 @@
             android:text="Receive data:"
             android:textSize="20dp"/>
 
-        <ProgressBar
+        <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
             android:layout_marginBottom="10dp"
-            style="?android:attr/progressBarStyleHorizontal"
-            android:max="100"
-            android:visibility="invisible"
-            android:id="@+id/receiveDataProgressBar"/>
+            android:text="Receiving data..."
+            android:textStyle="bold"
+            android:textAlignment="center"
+            android:id="@+id/receiveDataTextReceive"
+            android:visibility="invisible"/>
 
         <LinearLayout
             android:layout_width="match_parent"

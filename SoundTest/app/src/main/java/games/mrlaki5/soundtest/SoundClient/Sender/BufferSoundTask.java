@@ -19,6 +19,7 @@ import games.mrlaki5.soundtest.AdaptiveHuffman.AdaptiveHuffmanCompress;
 import games.mrlaki5.soundtest.AdaptiveHuffman.BitOutputStream;
 import games.mrlaki5.soundtest.ReedSolomon.EncoderDecoder;
 import games.mrlaki5.soundtest.SoundClient.BitFrequencyConverter;
+import games.mrlaki5.soundtest.SoundClient.ByteArrayParser;
 import games.mrlaki5.soundtest.SoundClient.CallbackSendRec;
 
 public class BufferSoundTask extends AsyncTask<Integer, Integer, Void> {
@@ -33,11 +34,16 @@ public class BufferSoundTask extends AsyncTask<Integer, Integer, Void> {
     private AudioTrack myTone=null;
 
     private byte[] message;
+    private byte[] messageFile;
     private ProgressBar progressBar=null;
     private CallbackSendRec callbackSR;
 
     public void setBuffer(byte[] message){
         this.message=message;
+    }
+
+    public void setFileBuffer(byte[] messageFile){
+        this.messageFile=messageFile;
     }
 
     public void setProgressBar(ProgressBar progressBar){
@@ -50,12 +56,6 @@ public class BufferSoundTask extends AsyncTask<Integer, Integer, Void> {
 
     public void setCallbackSR(CallbackSendRec callbackSR) {
         this.callbackSR = callbackSR;
-    }
-
-    private byte[] concatenateTwoArrays(final byte[] array1, byte[] array2) {
-        byte[] joinedArray = Arrays.copyOf(array1, array1.length + array2.length);
-        System.arraycopy(array2, 0, joinedArray, array1.length, array2.length);
-        return joinedArray;
     }
 
     @Override
@@ -71,6 +71,7 @@ public class BufferSoundTask extends AsyncTask<Integer, Integer, Void> {
 
 
         byte[] encodedMessage=message;
+        byte[] encodedMessageFile=messageFile;
 
         if(encoding==1) {
             InputStream in = new ByteArrayInputStream(encodedMessage);
@@ -84,43 +85,79 @@ public class BufferSoundTask extends AsyncTask<Integer, Integer, Void> {
                 e.printStackTrace();
                 return null;
             }
+            finally {
+                try {
+                    in.close();
+                    out.close();
+                    bitOut.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            if(encodedMessageFile!=null) {
+                in = new ByteArrayInputStream(encodedMessageFile);
+                out = new ByteArrayOutputStream();
+                bitOut = new BitOutputStream(out);
+                try {
+                    AdaptiveHuffmanCompress.compress(in, bitOut);
+                    bitOut.close();
+                    encodedMessageFile = out.toByteArray();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    return null;
+                } finally {
+                    try {
+                        in.close();
+                        out.close();
+                        bitOut.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
         }
         if(errorDet==1){
 
-            List<byte[]> tempList=new ArrayList<byte[]>();
-            int startPos=0;
-            int endPos=256-errorDetBNum;
-            int bytesLeft=encodedMessage.length;
-            while((bytesLeft+errorDetBNum)>256){
-                byte[] tempArr=Arrays.copyOfRange(encodedMessage, startPos, endPos);
-                tempList.add(tempArr);
-                startPos=endPos;
-                endPos=startPos+256-errorDetBNum;
-                bytesLeft-=(256-errorDetBNum);
-            }
-            byte[] tempArr=Arrays.copyOfRange(encodedMessage, startPos, encodedMessage.length);
-            tempList.add(tempArr);
+            ByteArrayParser bParser=new ByteArrayParser();
+            List<byte[]> tempList= bParser.devideInto256Chunks(encodedMessage, errorDetBNum);
             EncoderDecoder encoder = new EncoderDecoder();
 
-            encodedMessage=null;
             for(int i=0; i<tempList.size(); i++){
                 try {
-                    tempArr = encoder.encodeData(tempList.get(i), errorDetBNum);
-                    if(encodedMessage==null){
-                        encodedMessage=tempArr;
-                    }
-                    else{
-                        encodedMessage=concatenateTwoArrays(encodedMessage, tempArr);
-                    }
+                    byte[] tempArr = encoder.encodeData(tempList.get(i), errorDetBNum);
+                    bParser.mergeArray(tempArr);
                 } catch (EncoderDecoder.DataTooLargeException e) {
                     e.printStackTrace();
                     return null;
                 }
             }
+            encodedMessage=bParser.getAndResetOutputByteArray();
 
+            if(encodedMessageFile!=null){
+                tempList= bParser.devideInto256Chunks(encodedMessageFile, errorDetBNum);
+                encoder = new EncoderDecoder();
+
+                for(int i=0; i<tempList.size(); i++){
+                    try {
+                        byte[] tempArr = encoder.encodeData(tempList.get(i), errorDetBNum);
+                        bParser.mergeArray(tempArr);
+                    } catch (EncoderDecoder.DataTooLargeException e) {
+                        e.printStackTrace();
+                        return null;
+                    }
+                }
+                encodedMessageFile=bParser.getAndResetOutputByteArray();
+            }
         }
-
+        if(encodedMessage==null){
+            return null;
+        }
         ArrayList<Integer> freqs=bitConverter.calculateFrequency(encodedMessage);
+        ArrayList<Integer> freqsFile=null;
+        if(encodedMessageFile!=null){
+            freqsFile=bitConverter.calculateFrequency(encodedMessageFile);
+        }
         if(!work){
             return null;
         }
@@ -132,6 +169,9 @@ public class BufferSoundTask extends AsyncTask<Integer, Integer, Void> {
         myTone.play();
         int currProgress=0;
         int allLength=freqs.size()*2+4;
+        if(freqsFile!=null){
+            allLength+=freqsFile.size()*2+4;
+        }
         playTone((double)bitConverter.getHandshakeStartFreq(), durationSec);
         publishProgress(((++currProgress)*100)/allLength);
         playTone((double)bitConverter.getHandshakeStartFreq(), durationSec);
@@ -151,6 +191,28 @@ public class BufferSoundTask extends AsyncTask<Integer, Integer, Void> {
         publishProgress(((++currProgress)*100)/allLength);
         playTone((double)bitConverter.getHandshakeEndFreq(), durationSec);
         publishProgress(((++currProgress)*100)/allLength);
+
+        if(freqsFile!=null){
+            playTone((double)bitConverter.getHandshakeStartFreq(), durationSec);
+            publishProgress(((++currProgress)*100)/allLength);
+            playTone((double)bitConverter.getHandshakeStartFreq(), durationSec);
+            publishProgress(((++currProgress)*100)/allLength);
+            for (int freq: freqsFile) {
+                //playTone((double)freq,durationSec);
+                playTone((double)freq,durationSec/2);
+                publishProgress(((++currProgress)*100)/allLength);
+                playTone((double)bitConverter.getHandshakeStartFreq(), durationSec);
+                publishProgress(((++currProgress)*100)/allLength);
+                if(!work){
+                    myTone.release();
+                    return null;
+                }
+            }
+            playTone((double)bitConverter.getHandshakeEndFreq(), durationSec);
+            publishProgress(((++currProgress)*100)/allLength);
+            playTone((double)bitConverter.getHandshakeEndFreq(), durationSec);
+            publishProgress(((++currProgress)*100)/allLength);
+        }
         myTone.release();
         return null;
     }

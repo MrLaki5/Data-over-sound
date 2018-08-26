@@ -15,6 +15,7 @@ import games.mrlaki5.soundtest.FFT.Complex;
 import games.mrlaki5.soundtest.FFT.FFT;
 import games.mrlaki5.soundtest.ReedSolomon.EncoderDecoder;
 import games.mrlaki5.soundtest.SoundClient.BitFrequencyConverter;
+import games.mrlaki5.soundtest.SoundClient.ByteArrayParser;
 import games.mrlaki5.soundtest.SoundClient.CallbackSendRec;
 
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
@@ -134,7 +135,13 @@ public class RecordTask extends AsyncTask<Integer, Void, Void> implements Callba
         try {
             if (ErrorCheck == 1) {
                 EncoderDecoder encoder = new EncoderDecoder();
-                readBytes = encoder.decodeData(readBytes, ErrorCheckByteNum);
+                ByteArrayParser bParser=new ByteArrayParser();
+                ArrayList<byte[]> chunks=bParser.devideInto256Chunks(readBytes, ErrorCheckByteNum);
+                for(int i=0; i<chunks.size(); i++){
+                    readBytes = encoder.decodeData(chunks.get(i), ErrorCheckByteNum);
+                    bParser.mergeArray(readBytes);
+                }
+                readBytes=bParser.getAndResetOutputByteArray();
             }
             if (Encoding == 1) {
                 InputStream in = new ByteArrayInputStream(readBytes);
