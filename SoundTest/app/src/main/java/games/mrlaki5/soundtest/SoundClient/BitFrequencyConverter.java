@@ -137,7 +137,7 @@ public class BitFrequencyConverter {
         return resultList;
     }
 
-    public byte[] getReadBytes(){
+    public byte[] getAndResetReadBytes(){
         byte[] retArr;
         if(currShift!=0){
             retArr= new byte[readBytes.size()+1];
@@ -151,6 +151,9 @@ public class BitFrequencyConverter {
             retArr[i]=tempB;
             i++;
         }
+        readBytes.clear();
+        currByte=0x00;
+        currShift=0;
         return retArr;
     }
 

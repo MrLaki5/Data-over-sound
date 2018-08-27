@@ -116,11 +116,11 @@ public class ChatActivity extends AppCompatActivity implements CallbackSendRec{
     protected void onStop() {
         super.onStop();
         if(listenTask!=null){
-            isListening=false;
+            stopListening();
             listenTask.setWorkFalse();
         }
         if(sendTask!=null){
-            isSending=false;
+            stopSending();
             sendTask.setWorkFalse();
         }
     }

@@ -4,8 +4,11 @@ import android.os.AsyncTask;
 import android.os.Process;
 import android.util.Log;
 
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 
@@ -43,6 +46,12 @@ public class RecordTask extends AsyncTask<Integer, Void, Void> implements Callba
 
     private CallbackSendRec callbackRet;
 
+    private String fileName=null;
+
+    public void setFileName(String fileName){
+        this.fileName=fileName;
+    }
+
     @Override
     protected Void doInBackground(Integer... integers) {
         Process.setThreadPriority(THREAD_PRIORITY_BACKGROUND + THREAD_PRIORITY_MORE_FAVORABLE);
@@ -72,6 +81,7 @@ public class RecordTask extends AsyncTask<Integer, Void, Void> implements Callba
         int startCounter=0;
         int endCounter=0;
 
+        byte[] namePartBArray=null;
 
         int lastInfo=2;
 
@@ -114,7 +124,15 @@ public class RecordTask extends AsyncTask<Integer, Void, Void> implements Callba
                     if(currNum>(HandshakeEnd-HalfPadd)){
                         endCounter++;
                         if(endCounter>=2){
-                            setWorkFalse();
+                            if(fileName!=null && namePartBArray==null){
+                                namePartBArray=bitConverter.getAndResetReadBytes();
+                                listeningStarted=0;
+                                startCounter=0;
+                                endCounter=0;
+                            }
+                            else{
+                                setWorkFalse();
+                            }
                         }
                     }
                     else{
@@ -131,7 +149,7 @@ public class RecordTask extends AsyncTask<Integer, Void, Void> implements Callba
                 }
             }
         }
-        byte[] readBytes= bitConverter.getReadBytes();
+        byte[] readBytes= bitConverter.getAndResetReadBytes();
         try {
             if (ErrorCheck == 1) {
                 EncoderDecoder encoder = new EncoderDecoder();
@@ -142,14 +160,55 @@ public class RecordTask extends AsyncTask<Integer, Void, Void> implements Callba
                     bParser.mergeArray(readBytes);
                 }
                 readBytes=bParser.getAndResetOutputByteArray();
+                if(namePartBArray!=null){
+                    encoder = new EncoderDecoder();
+                    chunks=bParser.devideInto256Chunks(namePartBArray, ErrorCheckByteNum);
+                    for(int i=0; i<chunks.size(); i++){
+                        namePartBArray = encoder.decodeData(chunks.get(i), ErrorCheckByteNum);
+                        bParser.mergeArray(namePartBArray);
+                    }
+                    namePartBArray=bParser.getAndResetOutputByteArray();
+                }
             }
             if (Encoding == 1) {
                 InputStream in = new ByteArrayInputStream(readBytes);
                 ByteArrayOutputStream out = new ByteArrayOutputStream();
                 AdaptiveHuffmanDecompress.decompress(new BitInputStream(in), out);
                 readBytes = out.toByteArray();
+                in.close();
+                out.close();
+                if(namePartBArray!=null){
+                    in = new ByteArrayInputStream(namePartBArray);
+                    out = new ByteArrayOutputStream();
+                    AdaptiveHuffmanDecompress.decompress(new BitInputStream(in), out);
+                    namePartBArray = out.toByteArray();
+                    in.close();
+                    out.close();
+                }
             }
-            myString = new String(readBytes, "UTF-8");
+            if(namePartBArray==null) {
+                myString = new String(readBytes, "UTF-8");
+            }
+            else{
+                String fileExtension = new String(namePartBArray, "UTF-8");
+                int tempCnt=1;
+                boolean tempFlag=true;
+                File tempFile=null;
+                while(tempFlag){
+                    myString="receivedFile"+tempCnt+"."+fileExtension;
+                    String fullName=fileName+"/"+myString;
+                    tempFile = new File(fullName);
+                    if(!tempFile.exists()){
+                        tempFlag=false;
+                    }
+                    tempCnt++;
+                }
+                tempFile.createNewFile();
+                BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(tempFile));
+                bos.write(readBytes);
+                bos.flush();
+                bos.close();
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }

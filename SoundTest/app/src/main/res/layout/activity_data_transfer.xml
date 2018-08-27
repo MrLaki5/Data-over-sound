@@ -124,6 +124,7 @@
             android:orientation="horizontal"
             android:clickable="true"
             android:focusable="true"
+            android:id="@+id/receiveDataField"
             android:onClick="browseFolderExplorer">
 
             <ImageView
@@ -156,7 +157,8 @@
             android:layout_marginTop="10dp"
             android:background="#b8b8b8"
             android:visibility="invisible"
-            android:text="Receive"/>
+            android:text="Listen"
+            android:onClick="listenData"/>
 
     </LinearLayout>
 

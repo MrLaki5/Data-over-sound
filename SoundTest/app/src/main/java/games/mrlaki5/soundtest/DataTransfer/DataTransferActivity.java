@@ -32,6 +32,7 @@ import java.util.List;
 import games.mrlaki5.soundtest.R;
 import games.mrlaki5.soundtest.Settings.SettingsActivity;
 import games.mrlaki5.soundtest.SoundClient.CallbackSendRec;
+import games.mrlaki5.soundtest.SoundClient.Receiver.RecordTask;
 import games.mrlaki5.soundtest.SoundClient.Sender.BufferSoundTask;
 
 public class DataTransferActivity extends AppCompatActivity implements CallbackSendRec {
@@ -46,9 +47,11 @@ public class DataTransferActivity extends AppCompatActivity implements CallbackS
     private File receiveFolder=null;
 
     boolean sendingData=false;
+    boolean listeningData=false;
 
     private BufferSoundTask sendTask=null;
     private ProgressBar sendingBar=null;
+    private RecordTask listeningTask=null;
 
     private AdapterView.OnItemClickListener adapSendListener=new AdapterView.OnItemClickListener() {
         @Override
@@ -139,6 +142,19 @@ public class DataTransferActivity extends AppCompatActivity implements CallbackS
             }
         }
     };
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if(listeningTask!=null){
+            stopListen();
+            listeningTask.setWorkFalse();
+        }
+        if(sendTask!=null){
+            stopSend();
+            sendTask.setWorkFalse();
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -241,6 +257,12 @@ public class DataTransferActivity extends AppCompatActivity implements CallbackS
         if(sendFile==null){
             return;
         }
+        if(listeningData){
+            stopListen();
+            if(listeningTask!=null){
+                listeningTask.setWorkFalse();
+            }
+        }
         if(!sendingData) {
             try {
                 byte bytes[] = new byte[(int) sendFile.length()];
@@ -278,6 +300,42 @@ public class DataTransferActivity extends AppCompatActivity implements CallbackS
         }
     }
 
+    public void listenData(View view) {
+        if(receiveFolder==null){
+            return;
+        }
+        if(sendingData){
+            stopSend();
+            if(sendTask!=null){
+                sendTask.setWorkFalse();
+            }
+        }
+        if(!listeningData) {
+            try {
+
+                listeningData=true;
+                ((LinearLayout) findViewById(R.id.receiveDataField)).setClickable(false);
+                ((Button) view).setText("STOP");
+
+
+                Integer[] sendArguments=getSettingsArguments();
+                listeningTask=new RecordTask();
+                listeningTask.setCallbackRet(this);
+                listeningTask.setFileName(receiveFolder.getAbsolutePath());
+                listeningTask.execute(sendArguments);
+            }
+            catch(Exception e){
+                e.printStackTrace();
+            }
+        }
+        else{
+            if(listeningTask!=null){
+                listeningTask.setWorkFalse();
+            }
+            stopListen();
+        }
+    }
+
     private void stopSend(){
         sendingData=false;
         sendingBar.setVisibility(View.INVISIBLE);
@@ -289,6 +347,13 @@ public class DataTransferActivity extends AppCompatActivity implements CallbackS
         }
         ((LinearLayout) findViewById(R.id.sendDataField)).setClickable(true);
         ((Button) findViewById(R.id.sendDataButt)).setText("SEND");
+    }
+
+    private void stopListen(){
+        listeningData=false;
+        ((TextView) findViewById(R.id.receiveDataTextReceive)).setVisibility(View.INVISIBLE);
+        ((LinearLayout) findViewById(R.id.receiveDataField)).setClickable(true);
+        ((Button) findViewById(R.id.receiveDataButt)).setText("Listen");
     }
 
     private Integer[] getSettingsArguments(){
@@ -362,10 +427,22 @@ public class DataTransferActivity extends AppCompatActivity implements CallbackS
             Toast toast=Toast.makeText(this, "Data was sent", Toast.LENGTH_LONG);
             toast.show();
         }
+        else{
+            if(CallbackSendRec.RECEIVE_ACTION==srFlag && listeningData){
+                stopListen();
+                ((Button) findViewById(R.id.receiveDataButt)).setVisibility(View.INVISIBLE);
+                receiveFolder=null;
+                ((TextView) findViewById(R.id.receiveDataText)).setText("Folder not selected");
+                ImageView iv = (ImageView) findViewById(R.id.receiveDataImage);
+                iv.setImageResource(R.drawable.folder_image_grey);
+                Toast toast=Toast.makeText(this, "Data "+message+" received", Toast.LENGTH_LONG);
+                toast.show();
+            }
+        }
     }
 
     @Override
     public void receivingSomething() {
-
+        ((TextView) findViewById(R.id.receiveDataTextReceive)).setVisibility(View.VISIBLE);
     }
 }
