@@ -8,15 +8,20 @@ import android.util.Log;
 
 public class Recorder {
 
+    //Recorder parameters
     private int audioSource = MediaRecorder.AudioSource.DEFAULT;
+    //Mono=8b, Stereo=16b
     private int channelConfig = AudioFormat.CHANNEL_IN_MONO;
+    //16b or 8b per sample
     private int audioEncoding = AudioFormat.ENCODING_PCM_16BIT;
+    //Number of samples in 1sec
     private int sampleRate = 44100;
+    //Recording thread
     private Thread thread;
+    //Callback used to set up filled buffer
     private Callback callback;
 
-    public Recorder() {
-    }
+    public Recorder() {}
 
     public Recorder(Callback callback) {
         this.callback = callback;
@@ -32,40 +37,27 @@ public class Recorder {
             @Override
             public void run() {
                 Process.setThreadPriority(Process.THREAD_PRIORITY_URGENT_AUDIO);
-
+                //Gets minimum buffer size (can be larger)
                 int minBufferSize = AudioRecord.getMinBufferSize(sampleRate, channelConfig, audioEncoding);
-
-                int optimalBufSize=1;
-
-                while(optimalBufSize<minBufferSize){
-                    optimalBufSize<<=1;
+                int optimalBufSize=12000;
+                if(optimalBufSize<minBufferSize){
+                    optimalBufSize=minBufferSize;
                 }
-
-                optimalBufSize=12000;
-
+                //Sets the chosen buffer size in analyzing (father) activity
                 callback.setBufferSize(optimalBufSize);
-
+                //Create recorder
                 AudioRecord recorder = new AudioRecord(audioSource, sampleRate, channelConfig, audioEncoding, optimalBufSize);
-
                 if (recorder.getState() == AudioRecord.STATE_UNINITIALIZED) {
                     Thread.currentThread().interrupt();
                     return;
                 } else {
                     Log.i(Recorder.class.getSimpleName(), "Started.");
-                    //callback.onStart();
                 }
                 byte[] buffer = new byte[optimalBufSize];
+                //Start recording
                 recorder.startRecording();
-
-                int k=1;
-                int whenSend=0;
-                while (thread != null && !thread.isInterrupted() && (k=recorder.read(buffer, 0, optimalBufSize)) > 0) {
-                    //whenSend++;
-                    //Log.i(Recorder.class.getSimpleName(), "Recorderd bits= "+k);
-                    //if(whenSend==2) {
-                        callback.onBufferAvailable(buffer);
-                      //  whenSend=0;
-                    //}
+                while (thread != null && !thread.isInterrupted() && (recorder.read(buffer, 0, optimalBufSize)) > 0) {
+                    callback.onBufferAvailable(buffer);
                 }
                 recorder.stop();
                 recorder.release();

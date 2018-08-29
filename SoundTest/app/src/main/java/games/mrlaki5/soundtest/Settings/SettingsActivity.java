@@ -116,7 +116,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                 //the preference's entries' list.
                 ListPreference listPreference = (ListPreference) preference;
                 int index = listPreference.findIndexOfValue(stringValue);
-                // Set the summary to reflect the new value.
+                //Set the summary to reflect the new value.
                 preference.setSummary(
                         index >= 0
                                 ? listPreference.getEntries()[index]
@@ -125,7 +125,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             }
             else{
                 if (preference instanceof EditTextPreference) {
-                    // update the changed gallery name to summary filed
+                    //Update the changed preference value to summary filed
                     preference.setSummary(stringValue);
                 } else {
                     preference.setSummary(stringValue);
