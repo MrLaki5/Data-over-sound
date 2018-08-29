@@ -10,7 +10,7 @@
 
     *   No need for internet wifi or cellular network, just speakers and microphone.
 
-    *   Data is transfered using sound waves on frequencies adolt human ear can't hear.
+    *   Data is transfered using sound waves on frequencies adult human ear can't hear.
 
 
 

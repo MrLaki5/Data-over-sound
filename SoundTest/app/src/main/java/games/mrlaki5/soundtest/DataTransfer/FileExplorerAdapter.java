@@ -19,15 +19,12 @@ import java.util.List;
 import games.mrlaki5.soundtest.R;
 
 
-//Adapter used for printing score ArrayList to ListView
+//Adapter used for printing ArrayList to ListView
 public class FileExplorerAdapter extends ArrayAdapter<FileExplorerElement>{
 
-    //ScoresActivity context
     private Context mContext;
-    //ArrayList with scores
     private List<FileExplorerElement> myList;
 
-    //Constructor
     public FileExplorerAdapter(@NonNull Context context, ArrayList<FileExplorerElement> list) {
         //Constructor of ArrayAdapter. Resource is set in getView so now is passed 0
         super(context, 0, list);
@@ -35,20 +32,19 @@ public class FileExplorerAdapter extends ArrayAdapter<FileExplorerElement>{
         this.myList=list;
     }
 
-    //Method called for showing data from score ArrayList to view
+    //Method called for showing data from ArrayList to view
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-        //Load layout for score list view element
         View listItem=convertView;
         if(listItem==null){
             listItem= LayoutInflater.from(mContext).inflate(R.layout.storage_file_list_element, parent,
                     false);
         }
-        //Get current element from arrayList
         FileExplorerElement Elem= myList.get(position);
         //Set data to newly created view
         ((TextView) listItem.findViewById(R.id.fileName)).setText(Elem.getFileName());
+        //3 types of elements in browser: back, file and folder
         if(Elem.isBack()){
             ImageView iv = (ImageView) listItem.findViewById(R.id.fileImage);
             iv.setImageResource(R.drawable.folder_back);
@@ -66,8 +62,6 @@ public class FileExplorerAdapter extends ArrayAdapter<FileExplorerElement>{
                 ((TextView) listItem.findViewById(R.id.fileSize)).setText("");
             }
         }
-
-
         return listItem;
     }
 }

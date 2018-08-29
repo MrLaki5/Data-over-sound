@@ -1,9 +1,12 @@
 package games.mrlaki5.soundtest.Chat;
 
+//Message bean
 public class Message {
 
+    //Message content
     private String message;
-    private int user;   //0-current user, 1-other user
+    //User who sent message, 0-current user, 1-other user
+    private int user;
 
     public Message(String message, int user) {
         this.message = message;

@@ -1,9 +1,15 @@
 package games.mrlaki5.soundtest.DataTransfer;
 
+//Bean for files in file explorer
 public class FileExplorerElement {
+
+    //Name of file
     private String FileName;
+    //ize of file (if its not folder or back)
     private String FileSize;
+    //True if file, False if folder or back
     private boolean isFile;
+    //True if back, False if folder or file
     private boolean isBack;
 
     public FileExplorerElement(String fileName, String fileSize, boolean isFile, boolean isBack) {

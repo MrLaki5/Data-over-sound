@@ -36,38 +36,51 @@ import games.mrlaki5.soundtest.SoundClient.Receiver.RecordTask;
 import games.mrlaki5.soundtest.SoundClient.Sender.BufferSoundTask;
 
 public class DataTransferActivity extends AppCompatActivity implements CallbackSendRec {
-
+    //File used in file browser for current place
     private File currentFolder;
+    //File used in file browser for root folder
     private File rootFolder;
+    //List for files and folders in file browser
     private ListView myList;
+    //View for file browser dialog
     private View myView;
+    //File browser dialog
     private AlertDialog myDialog;
-
+    //File that needs to be send
     private File sendFile=null;
+    //Folder where file is going to be received
     private File receiveFolder=null;
-
+    //Is data being send flag
     boolean sendingData=false;
+    //Is activity listening for data flag
     boolean listeningData=false;
-
+    //Task for sending data
     private BufferSoundTask sendTask=null;
+    //Progress bar for sending data task
     private ProgressBar sendingBar=null;
+    //Task for receiving data
     private RecordTask listeningTask=null;
 
+    //Listener for listView on browsing for file to be sent
     private AdapterView.OnItemClickListener adapSendListener=new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             File[] files= currentFolder.listFiles();
             if(!currentFolder.getAbsolutePath().equals(rootFolder.getAbsolutePath())){
+                //On all folders except root on first position is back
                 if(position==0){
+                    //back is pressed
                     currentFolder=currentFolder.getParentFile();
                     loadAdapter();
                 }
                 else{
+                    //folder is pressed
                     if(files[position-1].isDirectory()) {
                         currentFolder = files[position-1];
                         loadAdapter();
                     }
                     else{
+                        //file is pressed, disable dialog and save chosen file
                         sendFile=files[position-1];
                         ((TextView) findViewById(R.id.sendDataText)).setText(sendFile.getName());
                         ImageView iv = (ImageView) findViewById(R.id.sendDataImage);
@@ -81,12 +94,15 @@ public class DataTransferActivity extends AppCompatActivity implements CallbackS
                     }
                 }
             }
+            //If its root folder
             else{
+                //folder is pressed
                 if(files[position].isDirectory()) {
                     currentFolder = files[position];
                     loadAdapter();
                 }
                 else{
+                    //file is pressed, disable dialog and save chosen file
                     sendFile=files[position];
                     ((TextView) findViewById(R.id.sendDataText)).setText(sendFile.getName());
                     ImageView iv = (ImageView) findViewById(R.id.sendDataImage);
@@ -102,23 +118,29 @@ public class DataTransferActivity extends AppCompatActivity implements CallbackS
         }
     };
 
+    //Listener for listView on browsing receive folder
     private AdapterView.OnItemClickListener adapReceiveListener=new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             File[] files= currentFolder.listFiles();
             if(!currentFolder.getAbsolutePath().equals(rootFolder.getAbsolutePath())){
+                //On all folders except root on first position is back
                 if(position==0){
+                    //back is pressed
                     currentFolder=currentFolder.getParentFile();
                     loadAdapter();
                 }
                 else{
+                    //folder is pressed
                     if(files[position-1].isDirectory()) {
                         currentFolder = files[position-1];
                         loadAdapter();
                     }
                 }
             }
+            //Its root folder
             else{
+                //folder is pressed
                 if(files[position].isDirectory()) {
                     currentFolder = files[position];
                     loadAdapter();
@@ -127,9 +149,11 @@ public class DataTransferActivity extends AppCompatActivity implements CallbackS
         }
     };
 
+    //Listener for choosing receive folder in browse folder dialog
     private View.OnClickListener receiveExplorerButtonListener=new View.OnClickListener() {
         @Override
         public void onClick(View v) {
+            //Save current folder and disable dialog
             receiveFolder=currentFolder;
             ((TextView) findViewById(R.id.receiveDataText)).setText(receiveFolder.getName());
             ImageView iv = (ImageView) findViewById(R.id.receiveDataImage);
@@ -143,9 +167,11 @@ public class DataTransferActivity extends AppCompatActivity implements CallbackS
         }
     };
 
+    //Called on stopping activity
     @Override
     protected void onStop() {
         super.onStop();
+        //If listener or send task are still active, turn them off
         if(listeningTask!=null){
             stopListen();
             listeningTask.setWorkFalse();
@@ -156,19 +182,20 @@ public class DataTransferActivity extends AppCompatActivity implements CallbackS
         }
     }
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_data_transfer);
-
+        //set title of action bar
         android.support.v7.app.ActionBar ab=getSupportActionBar();
         if(ab!=null){
             ab.setTitle("Data transfer");
         }
-
         sendingBar=((ProgressBar) findViewById(R.id.sendDataProgressBar));
     }
 
+    //Creates dialog for file explorer
     private void browseFileExplorer(){
         currentFolder= new File(Environment.getExternalStorageDirectory()
                 .getAbsolutePath());
@@ -177,7 +204,6 @@ public class DataTransferActivity extends AppCompatActivity implements CallbackS
         AlertDialog.Builder mBulder= new AlertDialog.Builder(this);
         //Load dialog view
         myView= getLayoutInflater().inflate(R.layout.dialog_file_explorer, null);
-        //Add to buttons on dialog view click listeners
         myList=((ListView) myView.findViewById(R.id.dialogFExFilesList));
         myList.setOnItemClickListener(adapSendListener);
         loadAdapter();
@@ -189,6 +215,7 @@ public class DataTransferActivity extends AppCompatActivity implements CallbackS
         myDialog.show();
     }
 
+    //Check if permission for storage are granted and activates dialog
     public void browseFileExplorer(View view) {
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE)
@@ -200,6 +227,7 @@ public class DataTransferActivity extends AppCompatActivity implements CallbackS
         }
     }
 
+    //Creates dialog for folder explorer
     private void browseFolderExplorer(){
         currentFolder= new File(Environment.getExternalStorageDirectory()
                 .getAbsolutePath());
@@ -221,6 +249,7 @@ public class DataTransferActivity extends AppCompatActivity implements CallbackS
         myDialog.show();
     }
 
+    //Check if permission for storage are granted and activates dialog
     public void browseFolderExplorer(View view){
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE)
@@ -232,10 +261,11 @@ public class DataTransferActivity extends AppCompatActivity implements CallbackS
         }
     }
 
+    //Fills file browser view with files and folders from current folder
     private void loadAdapter(){
-
         File[] files= currentFolder.listFiles();
         ArrayList<FileExplorerElement> folders=new ArrayList<FileExplorerElement>();
+        //if its not root folder add back option
         if(!currentFolder.getAbsolutePath().equals(rootFolder.getAbsolutePath())){
             folders.add(new FileExplorerElement("Back", "", false, true));
         }
@@ -245,18 +275,16 @@ public class DataTransferActivity extends AppCompatActivity implements CallbackS
             boolean isFolder=files[i].isDirectory();
             folders.add(new FileExplorerElement(fileNameTmp, fileSizeTmp, !isFolder, false));
         }
-
-
-        //Create score adapter with data score list
         FileExplorerAdapter adapter=new FileExplorerAdapter(DataTransferActivity.this, folders);
-        //Add score adapter to view list
         myList.setAdapter(adapter);
     }
 
+    //Called when data is send
     public void sendData(View view) {
         if(sendFile==null){
             return;
         }
+        //If listening task is active turn it off
         if(listeningData){
             stopListen();
             if(listeningTask!=null){
@@ -264,22 +292,21 @@ public class DataTransferActivity extends AppCompatActivity implements CallbackS
             }
         }
         if(!sendingData) {
+            //Load file and start sending it in send task, update GUI to send state
             try {
                 byte bytes[] = new byte[(int) sendFile.length()];
                 BufferedInputStream bis = new BufferedInputStream(new FileInputStream(sendFile));
                 DataInputStream dis = new DataInputStream(bis);
                 dis.readFully(bytes);
-
                 sendingData=true;
                 ((ProgressBar) findViewById(R.id.sendDataProgressBar)).setVisibility(View.VISIBLE);
                 ((LinearLayout) findViewById(R.id.sendDataField)).setClickable(false);
                 ((Button) view).setText("STOP");
-
+                //Send only extension of file from file name, faster sending
                 String fileName=sendFile.getName();
                 String tempStr[]=fileName.split("\\.");
                 fileName=tempStr[tempStr.length-1];
                 byte[] nameBytes=fileName.getBytes("UTF-8");
-
                 Integer[] sendArguments=getSettingsArguments();
                 sendTask= new BufferSoundTask();
                 sendTask.setProgressBar(sendingBar);
@@ -292,6 +319,7 @@ public class DataTransferActivity extends AppCompatActivity implements CallbackS
                 e.printStackTrace();
             }
         }
+        //Stop is pressed, turn off task and update GUI
         else{
             if(sendTask!=null){
                 sendTask.setWorkFalse();
@@ -300,10 +328,12 @@ public class DataTransferActivity extends AppCompatActivity implements CallbackS
         }
     }
 
+    //Called to start listening for data
     public void listenData(View view) {
         if(receiveFolder==null){
             return;
         }
+        //If sending task is active, turn it off
         if(sendingData){
             stopSend();
             if(sendTask!=null){
@@ -311,13 +341,11 @@ public class DataTransferActivity extends AppCompatActivity implements CallbackS
             }
         }
         if(!listeningData) {
+            //Start listening task and refresh GUI
             try {
-
                 listeningData=true;
                 ((LinearLayout) findViewById(R.id.receiveDataField)).setClickable(false);
                 ((Button) view).setText("STOP");
-
-
                 Integer[] sendArguments=getSettingsArguments();
                 listeningTask=new RecordTask();
                 listeningTask.setCallbackRet(this);
@@ -329,6 +357,7 @@ public class DataTransferActivity extends AppCompatActivity implements CallbackS
             }
         }
         else{
+            //If listening task is active, turn it off (stop is pressed)
             if(listeningTask!=null){
                 listeningTask.setWorkFalse();
             }
@@ -336,6 +365,7 @@ public class DataTransferActivity extends AppCompatActivity implements CallbackS
         }
     }
 
+    //Update GUI and flag to initial state from sending state
     private void stopSend(){
         sendingData=false;
         sendingBar.setVisibility(View.INVISIBLE);
@@ -349,6 +379,7 @@ public class DataTransferActivity extends AppCompatActivity implements CallbackS
         ((Button) findViewById(R.id.sendDataButt)).setText("SEND");
     }
 
+    //Update GUI and flag to initial state from listening state
     private void stopListen(){
         listeningData=false;
         ((TextView) findViewById(R.id.receiveDataTextReceive)).setVisibility(View.INVISIBLE);
@@ -356,6 +387,7 @@ public class DataTransferActivity extends AppCompatActivity implements CallbackS
         ((Button) findViewById(R.id.receiveDataButt)).setText("Listen");
     }
 
+    //Called to get parameters from settings preferences
     private Integer[] getSettingsArguments(){
         Integer[] tempArr = new Integer[6];
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
@@ -382,41 +414,34 @@ public class DataTransferActivity extends AppCompatActivity implements CallbackS
         return tempArr;
     }
 
+    //Called when user answers on permission request
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
         switch (requestCode) {
             case 0: {
-                // If request is cancelled, the result arrays are empty.
+                //Permission to storage granted on file browser
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     browseFileExplorer();
-                } else {
-                    // permission denied, boo! Disable the
-                    // functionality that depends on this permission.
                 }
                 return;
             }
-
             case 1: {
-                // If request is cancelled, the result arrays are empty.
+                //Permission to storage granted on folder browser
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     browseFolderExplorer();
-                } else {
-                    // permission denied, boo! Disable the
-                    // functionality that depends on this permission.
                 }
                 return;
             }
-
-            // other 'case' lines to check for other
-            // permissions this app might request.
         }
     }
 
+    //Called when sending task or receiving task have finished work
     @Override
     public void actionDone(int srFlag, String message) {
+        //If its sending task and activity is still in sending mode
         if(CallbackSendRec.SEND_ACTION==srFlag && sendingData){
             stopSend();
             ((Button) findViewById(R.id.sendDataButt)).setVisibility(View.INVISIBLE);
@@ -427,6 +452,7 @@ public class DataTransferActivity extends AppCompatActivity implements CallbackS
             Toast toast=Toast.makeText(this, "Data was sent", Toast.LENGTH_LONG);
             toast.show();
         }
+        //If its receiving task and activity is still in receiving mode
         else{
             if(CallbackSendRec.RECEIVE_ACTION==srFlag && listeningData){
                 stopListen();
@@ -441,6 +467,7 @@ public class DataTransferActivity extends AppCompatActivity implements CallbackS
         }
     }
 
+    //Called when receiving task starts receiving message
     @Override
     public void receivingSomething() {
         ((TextView) findViewById(R.id.receiveDataTextReceive)).setVisibility(View.VISIBLE);

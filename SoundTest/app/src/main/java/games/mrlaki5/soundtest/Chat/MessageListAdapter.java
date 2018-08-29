@@ -14,11 +14,11 @@ import java.util.List;
 
 import games.mrlaki5.soundtest.R;
 
+//Adapter used for imputing messages to messages view
 public class MessageListAdapter extends RecyclerView.Adapter {
     private static final int VIEW_TYPE_MESSAGE_SENT = 1;
     private static final int VIEW_TYPE_MESSAGE_RECEIVED = 2;
     private static final int VIEW_TYPE_MESSAGE_RECEIVED_BOLD = 3;
-
     private Context mContext;
     private List<Message> mMessageList;
 
@@ -32,13 +32,11 @@ public class MessageListAdapter extends RecyclerView.Adapter {
         return mMessageList.size();
     }
 
-    // Determines the appropriate ViewType according to the sender of the message.
+    //Determines the appropriate ViewType according to the sender of the message.
     @Override
     public int getItemViewType(int position) {
         Message message = mMessageList.get(position);
-
         int currUser=message.getUser();
-
         if (currUser == 0) {
             // If the current user is the sender of the message
             return VIEW_TYPE_MESSAGE_SENT;
@@ -50,7 +48,6 @@ public class MessageListAdapter extends RecyclerView.Adapter {
                 return VIEW_TYPE_MESSAGE_RECEIVED_BOLD;
             }
             // If some other user sent the message
-
         }
     }
 
@@ -58,7 +55,6 @@ public class MessageListAdapter extends RecyclerView.Adapter {
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view;
-
         if (viewType == VIEW_TYPE_MESSAGE_SENT) {
             view = LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.item_message_sent, parent, false);
@@ -81,7 +77,6 @@ public class MessageListAdapter extends RecyclerView.Adapter {
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         Message message = mMessageList.get(position);
-
         switch (holder.getItemViewType()) {
             case VIEW_TYPE_MESSAGE_SENT:
                 ((SentMessageHolder) holder).bind(message);
@@ -95,7 +90,7 @@ public class MessageListAdapter extends RecyclerView.Adapter {
         }
     }
 
-
+    //View holder for received messages
     private class ReceivedMessageHolder extends RecyclerView.ViewHolder {
         TextView messageText;
 
@@ -109,6 +104,7 @@ public class MessageListAdapter extends RecyclerView.Adapter {
         }
     }
 
+    //View holder for sent messages
     private class SentMessageHolder extends RecyclerView.ViewHolder {
         TextView messageText;
 

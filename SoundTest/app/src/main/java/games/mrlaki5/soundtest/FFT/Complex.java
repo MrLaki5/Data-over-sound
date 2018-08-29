@@ -129,8 +129,6 @@ public class Complex {
         return sin().divides(cos());
     }
 
-
-
     // a static version of plus
     public static Complex plus(Complex a, Complex b) {
         double real = a.re + b.re;

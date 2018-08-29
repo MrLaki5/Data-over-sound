@@ -34,19 +34,27 @@ import games.mrlaki5.soundtest.SoundClient.Receiver.RecordTask;
 import games.mrlaki5.soundtest.Settings.SettingsActivity;
 
 public class ChatActivity extends AppCompatActivity implements CallbackSendRec{
-
+    //View for showing all messages
     private RecyclerView mMessageRecycler;
+    //Adapter for messages view
     private MessageListAdapter mMessageAdapter;
+    //Layout manager for messages view
     private LinearLayoutManager mManager;
+    //Progress bar for sending message progress
     private ProgressBar sendingBar;
-
+    //Is sending flag
     private boolean isSending=false;
+    //Is listening flag
     private boolean isListening=false;
+    //Is listening and receiving flag
     private boolean isReceiving=false;
+    //Task for sending message
     private BufferSoundTask sendTask=null;
+    //Task for receiving message
     private RecordTask listenTask=null;
+    //Text to be send
     private String sendText;
-
+    //List of all messages
     private List<Message> messageList;
 
     @Override
@@ -54,36 +62,32 @@ public class ChatActivity extends AppCompatActivity implements CallbackSendRec{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
 
+        //Put name on action bar of activity
         android.support.v7.app.ActionBar ab=getSupportActionBar();
         if(ab!=null){
             ab.setTitle("Chat");
         }
-
         sendingBar=((ProgressBar) findViewById(R.id.progressBar));
 
+        //Create list of messages and import it from database
         messageList=new ArrayList<Message>();
-
         SQLiteDatabase db = new DbHelper(this).getReadableDatabase();
         String[] columnsRet={MessagesTableEntry.COLUMN_USER,
                 MessagesTableEntry.COLUMN_MESSAGE,
                 MessagesTableEntry._ID};
-        //Execute query and get cursor
         Cursor cursor=db.query(MessagesTableEntry.TABLE_NAME, columnsRet,
                 null, null,
                 null,null,null);
-        //Go through cursor (database scores) and add every different player
-        // combination and their scores to score data list
         while(cursor.moveToNext()){
-            //Get player names and scores
             int user=cursor.getInt(cursor.getColumnIndex(
                     MessagesTableEntry.COLUMN_USER));
             String message=cursor.getString(cursor.getColumnIndex(
                     MessagesTableEntry.COLUMN_MESSAGE));
             messageList.add(new Message(message, user));
         }
-        //Close cursor
         cursor.close();
 
+        //initialize view for displaying messages
         mMessageRecycler = (RecyclerView) findViewById(R.id.reyclerview_message_list);
         mMessageAdapter = new MessageListAdapter(this, messageList);
         mMessageRecycler.setAdapter(mMessageAdapter);
@@ -92,18 +96,23 @@ public class ChatActivity extends AppCompatActivity implements CallbackSendRec{
         mMessageRecycler.setLayoutManager(mManager);
     }
 
+    //Create menu on chat activity
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.chat_menu, menu);
         return true;
     }
 
+    //Listener for chat menu
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        //Check if clear of chat is selected
         if(item.getItemId() == R.id.chat_menu_clear_chat){
+            //Clear messages database and messages view
             SQLiteDatabase db=new DbHelper(this).getWritableDatabase();
             db.delete(MessagesTableEntry.TABLE_NAME, null, null);
             messageList.clear();
+            //Refresh messages view
             mMessageAdapter.notifyDataSetChanged();
         }
         else {
@@ -112,9 +121,11 @@ public class ChatActivity extends AppCompatActivity implements CallbackSendRec{
         return true;
     }
 
+    //Called when activity is moved from screen
     @Override
     protected void onStop() {
         super.onStop();
+        //if listening task or sending task are active turn them off and return gui to start state
         if(listenTask!=null){
             stopListening();
             listenTask.setWorkFalse();
@@ -125,14 +136,19 @@ public class ChatActivity extends AppCompatActivity implements CallbackSendRec{
         }
     }
 
+    //Called when message is sending
     public void sendMessage(View view) {
+        //If listening task is active, turn it of and return gui to start state
         if(isListening){
             stopListening();
             if(listenTask!=null){
                 listenTask.setWorkFalse();
             }
         }
+
+        //Check if activity is already sending
         if(!isSending) {
+            //If its not sending, check if message exists and send (prepare GUI and execute task)
             sendText = ((TextView) findViewById(R.id.edittext_chatbox)).getText().toString();
             if (!sendText.isEmpty() && !sendText.equals(" ")) {
                 isSending=true;
@@ -152,6 +168,7 @@ public class ChatActivity extends AppCompatActivity implements CallbackSendRec{
             }
         }
         else{
+            //If its already sending, stop it
             if(sendTask!=null){
                 sendTask.setWorkFalse();
             }
@@ -159,29 +176,36 @@ public class ChatActivity extends AppCompatActivity implements CallbackSendRec{
         }
     }
 
+    //Called when sending task or receiving task have finished work
     @Override
     public void actionDone(int srFlag, String message) {
+        //If its sending task and activity is still in sending mode
         if(CallbackSendRec.SEND_ACTION==srFlag && isSending){
+            //Update GUI to initial state
             stopSending();
             String text=((TextView) findViewById(R.id.edittext_chatbox)).getText().toString();
+            //IF text was not changed while sending, clear it
             if(sendText.equals(text)){
                 ((TextView) findViewById(R.id.edittext_chatbox)).setText("");
             }
-
+            //Update messages database
             DbHelper helper = new DbHelper(this);
             SQLiteDatabase db = helper.getWritableDatabase();
             ContentValues values = new ContentValues();
             values.put(MessagesTableEntry.COLUMN_USER, 0);
             values.put(MessagesTableEntry.COLUMN_MESSAGE, sendText);
             db.insert(MessagesTableEntry.TABLE_NAME, null, values);
-
+            //Update messages view and refresh it
             messageList.add(new Message(sendText, 0));
             mMessageAdapter.notifyDataSetChanged();
             mManager.smoothScrollToPosition(mMessageRecycler, null, mMessageAdapter.getItemCount());
         }
         else{
+            //If its receiving task and activity is still in receiving mode
             if(CallbackSendRec.RECEIVE_ACTION==srFlag && isListening){
+                //Update GUI to initial state
                 stopListening();
+                //If received message exists put it in database and show it on view
                 if(!message.equals("")){
                     DbHelper helper = new DbHelper(this);
                     SQLiteDatabase db = helper.getWritableDatabase();
@@ -189,7 +213,6 @@ public class ChatActivity extends AppCompatActivity implements CallbackSendRec{
                     values.put(MessagesTableEntry.COLUMN_USER, 1);
                     values.put(MessagesTableEntry.COLUMN_MESSAGE, message);
                     db.insert(MessagesTableEntry.TABLE_NAME, null, values);
-
                     messageList.add(new Message(message, 1));
                     mMessageAdapter.notifyDataSetChanged();
                     mManager.smoothScrollToPosition(mMessageRecycler, null, mMessageAdapter.getItemCount());
@@ -198,14 +221,17 @@ public class ChatActivity extends AppCompatActivity implements CallbackSendRec{
         }
     }
 
+    //Called when receiving task starts receiving message
     @Override
     public void receivingSomething() {
+        //Update view and flag to show that something is receiving
         messageList.add(new Message("Receiving message...", 2));
         mMessageAdapter.notifyDataSetChanged();
         mManager.smoothScrollToPosition(mMessageRecycler, null, mMessageAdapter.getItemCount());
         isReceiving=true;
     }
 
+    //Called to reset view and flag to initial state from sending state
     private void stopSending(){
         ((Button) findViewById(R.id.button_chatbox_send)).setText("SEND");
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
@@ -218,6 +244,7 @@ public class ChatActivity extends AppCompatActivity implements CallbackSendRec{
         isSending=false;
     }
 
+    //Called to reset view and flag to initial state from listening state
     private void stopListening(){
         if(isReceiving){
             messageList.remove(messageList.size()-1);
@@ -228,6 +255,7 @@ public class ChatActivity extends AppCompatActivity implements CallbackSendRec{
         isListening=false;
     }
 
+    //Called to start listening task and update GUI to listening
     private void listen(){
         isListening=true;
         ((Button)findViewById(R.id.button_chatbox_listen)).setText("STOP");
@@ -237,13 +265,16 @@ public class ChatActivity extends AppCompatActivity implements CallbackSendRec{
         listenTask.execute(tempArr);
     }
 
+    //Called on listen button click
     public void listenMessage(View view) {
+        //If sending task is active, stop it and update GUI
         if(isSending){
             stopSending();
             if(sendTask!=null){
                 sendTask.setWorkFalse();
             }
         }
+        //If its not listening check for mic permission and start listening
         if(!isListening) {
             if (ContextCompat.checkSelfPermission(this,
                     Manifest.permission.RECORD_AUDIO)
@@ -254,6 +285,7 @@ public class ChatActivity extends AppCompatActivity implements CallbackSendRec{
                 listen();
             }
         }
+        //If its already listening, stop listening and update GUI
         else{
             if(listenTask!=null){
                 listenTask.setWorkFalse();
@@ -262,27 +294,23 @@ public class ChatActivity extends AppCompatActivity implements CallbackSendRec{
         }
     }
 
+    //Called when user answers on permission request
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
         switch (requestCode) {
             case 0: {
-                // If request is cancelled, the result arrays are empty.
+                //If user granted permission on mic, continue with listening
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     listen();
-                } else {
-                    // permission denied, boo! Disable the
-                    // functionality that depends on this permission.
                 }
                 return;
             }
-
-            // other 'case' lines to check for other
-            // permissions this app might request.
         }
     }
 
+    //Called to get parameters from settings preferences
     private Integer[] getSettingsArguments(){
         Integer[] tempArr = new Integer[6];
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
