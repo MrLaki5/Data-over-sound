@@ -10,21 +10,21 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:text="Data transfer"
+        android:text="@string/data_transfer"
         android:id="@+id/dataBut"
         android:onClick="dataStart"
         android:textColor="#000000"
         android:textSize="20dp"
-        android:background="#e6e6e6"/>
+        android:background="@color/colorGrey"/>
 
     <Button
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:text="Chat"
+        android:text="@string/chat"
         android:id="@+id/chatButt"
         android:onClick="chatStart"
-        android:background="#b01123"
+        android:background="@color/colorPrimary"
         android:textColor="#FFFFFF"
         android:textSize="20dp"/>
 
@@ -32,10 +32,10 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:text="Settings"
+        android:text="@string/settings"
         android:id="@+id/settingsButt"
         android:onClick="settings"
-        android:background="#e6e6e6"
+        android:background="@color/colorGrey"
         android:textColor="#000000"
         android:textSize="20dp"/>
 

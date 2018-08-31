@@ -1,3 +1,38 @@
 <resources>
+    <!-- Mutual -->
     <string name="app_name">Data Over Sound</string>
+    <string name="chat">Chat</string>
+    <string name="settings">Settings</string>
+    <string name="data_transfer">Data transfer</string>
+    <string name="send">Send</string>
+    <string name="listen">Listen</string>
+    <string name="stop">Stop</string>
+    <!-- Chat activity -->
+    <string name="clear_chat">Clear chat</string>
+    <!-- Data transfer activity -->
+    <string name="send_data">Send data:</string>
+    <string name="receive_data">Receive data:</string>
+    <string name="no_file_selected">No file selected</string>
+    <string name="folder_not_selected">Folder not selected</string>
+    <string name="receiving_data">Receiving data…</string>
+    <string name="choose_current_folder">choose current folder</string>
+    <string name="data_received">Data received:</string>
+    <string name="data_was_sent">Data was sent</string>
+    <string name="choose_folder">Choose folder:</string>
+    <string name="choose_file">Choose file:</string>
+    <!-- Settings activity -->
+    <string name="encoding">Encoding</string>
+    <string name="general">General</string>
+    <string name="error_correction">Error correction</string>
+    <string name="edit_start_frequency">Edit start frequency:</string>
+    <string name="start_frequency">Start frequency</string>
+    <string name="edit_end_frequency">Edit end frequency:</string>
+    <string name="end_frequency">End frequency</string>
+    <string name="bits_per_tone">Bits per tone</string>
+    <string name="edit_bits_per_tone">Bits per tone:</string>
+    <string name="adaptive_huffman">Adaptive Huffman</string>
+    <string name="reed_solomon">Reed Solomon</string>
+    <string name="error_detection_byte_number">Error detection byte number</string>
+    <string name="error_detection_byte_number_edit">Error detection byte number:</string>
+    <string name="default_settings">Default settings</string>
 </resources>

@@ -4,7 +4,7 @@
 
     <item
         android:id="@+id/settings_menu_default_settings"
-        android:title="Default settings"
+        android:title="@string/default_settings"
         app:showAsAction="never"/>
 
 </menu>

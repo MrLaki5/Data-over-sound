@@ -8,8 +8,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import org.w3c.dom.Text;
-
 import java.util.List;
 
 import games.mrlaki5.soundtest.R;
@@ -19,11 +17,9 @@ public class MessageListAdapter extends RecyclerView.Adapter {
     private static final int VIEW_TYPE_MESSAGE_SENT = 1;
     private static final int VIEW_TYPE_MESSAGE_RECEIVED = 2;
     private static final int VIEW_TYPE_MESSAGE_RECEIVED_BOLD = 3;
-    private Context mContext;
     private List<Message> mMessageList;
 
-    public MessageListAdapter(Context context, List<Message> messageList) {
-        mContext = context;
+    public MessageListAdapter(List<Message> messageList) {
         mMessageList = messageList;
     }
 
@@ -66,7 +62,7 @@ public class MessageListAdapter extends RecyclerView.Adapter {
         } else if (viewType == VIEW_TYPE_MESSAGE_RECEIVED_BOLD) {
             view = LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.item_message_received, parent, false);
-            TextView tw=((TextView) view.findViewById(R.id.text_message_body));
+            TextView tw=(view.findViewById(R.id.text_message_body));
             tw.setTypeface(null, Typeface.BOLD_ITALIC);
             return new ReceivedMessageHolder(view);
         }
@@ -96,7 +92,7 @@ public class MessageListAdapter extends RecyclerView.Adapter {
 
         ReceivedMessageHolder(View itemView) {
             super(itemView);
-            messageText = (TextView) itemView.findViewById(R.id.text_message_body);
+            messageText = itemView.findViewById(R.id.text_message_body);
         }
 
         void bind(Message message) {
@@ -110,7 +106,7 @@ public class MessageListAdapter extends RecyclerView.Adapter {
 
         SentMessageHolder(View itemView) {
             super(itemView);
-            messageText = (TextView) itemView.findViewById(R.id.text_message_body);
+            messageText = itemView.findViewById(R.id.text_message_body);
         }
 
         void bind(Message message) {

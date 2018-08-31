@@ -31,8 +31,6 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     public static boolean DEF_ERROR_DETECTION=false;
     public static String DEF_ERROR_BYTE_NUM="4";
 
-    private static final String TAG = SettingsActivity.class.getSimpleName();
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -41,7 +39,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         getFragmentManager().beginTransaction().replace(android.R.id.content, new MainPreferenceFragment()).commit();
         android.support.v7.app.ActionBar ab=getSupportActionBar();
         if(ab!=null){
-            ab.setTitle("Settings");
+            ab.setTitle(R.string.settings);
         }
     }
 

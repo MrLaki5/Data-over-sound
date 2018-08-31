@@ -8,6 +8,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Build;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -65,12 +66,12 @@ public class ChatActivity extends AppCompatActivity implements CallbackSendRec{
         //Put name on action bar of activity
         android.support.v7.app.ActionBar ab=getSupportActionBar();
         if(ab!=null){
-            ab.setTitle("Chat");
+            ab.setTitle(R.string.chat);
         }
-        sendingBar=((ProgressBar) findViewById(R.id.progressBar));
+        sendingBar=findViewById(R.id.progressBar);
 
         //Create list of messages and import it from database
-        messageList=new ArrayList<Message>();
+        messageList=new ArrayList<>();
         SQLiteDatabase db = new DbHelper(this).getReadableDatabase();
         String[] columnsRet={MessagesTableEntry.COLUMN_USER,
                 MessagesTableEntry.COLUMN_MESSAGE,
@@ -88,8 +89,8 @@ public class ChatActivity extends AppCompatActivity implements CallbackSendRec{
         cursor.close();
 
         //initialize view for displaying messages
-        mMessageRecycler = (RecyclerView) findViewById(R.id.reyclerview_message_list);
-        mMessageAdapter = new MessageListAdapter(this, messageList);
+        mMessageRecycler = findViewById(R.id.reyclerview_message_list);
+        mMessageAdapter = new MessageListAdapter(messageList);
         mMessageRecycler.setAdapter(mMessageAdapter);
         mManager=new LinearLayoutManager(this);
         mManager.setStackFromEnd(true);
@@ -156,7 +157,7 @@ public class ChatActivity extends AppCompatActivity implements CallbackSendRec{
                 sendTask = new BufferSoundTask();
                 sendTask.setProgressBar(sendingBar);
                 sendTask.setCallbackSR(this);
-                ((Button) view).setText("STOP");
+                ((Button) view).setText(R.string.stop);
                 try {
                     byte[] byteText = sendText.getBytes("UTF-8");
                     sendTask.setBuffer(byteText);
@@ -233,7 +234,7 @@ public class ChatActivity extends AppCompatActivity implements CallbackSendRec{
 
     //Called to reset view and flag to initial state from sending state
     private void stopSending(){
-        ((Button) findViewById(R.id.button_chatbox_send)).setText("SEND");
+        ((Button) findViewById(R.id.button_chatbox_send)).setText(R.string.send);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             sendingBar.setProgress(1, true);
         }
@@ -251,14 +252,14 @@ public class ChatActivity extends AppCompatActivity implements CallbackSendRec{
             mMessageAdapter.notifyDataSetChanged();
             isReceiving=false;
         }
-        ((Button) findViewById(R.id.button_chatbox_listen)).setText("LISTEN");
+        ((Button) findViewById(R.id.button_chatbox_listen)).setText(R.string.listen);
         isListening=false;
     }
 
     //Called to start listening task and update GUI to listening
     private void listen(){
         isListening=true;
-        ((Button)findViewById(R.id.button_chatbox_listen)).setText("STOP");
+        ((Button)findViewById(R.id.button_chatbox_listen)).setText(R.string.stop);
         Integer[] tempArr=getSettingsArguments();
         listenTask=new RecordTask();
         listenTask.setCallbackRet(this);
@@ -297,7 +298,7 @@ public class ChatActivity extends AppCompatActivity implements CallbackSendRec{
     //Called when user answers on permission request
     @Override
     public void onRequestPermissionsResult(int requestCode,
-                                           String permissions[], int[] grantResults) {
+                                           @NonNull String permissions[], @NonNull int[] grantResults) {
         switch (requestCode) {
             case 0: {
                 //If user granted permission on mic, continue with listening
@@ -305,7 +306,7 @@ public class ChatActivity extends AppCompatActivity implements CallbackSendRec{
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     listen();
                 }
-                return;
+                break;
             }
         }
     }

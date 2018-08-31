@@ -15,7 +15,7 @@
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="choose current folder"
+        android:text="@string/choose_current_folder"
         android:id="@+id/dialogFolderExButton"
         android:layout_alignParentBottom="true"
         android:textColor="#FFFFFF"

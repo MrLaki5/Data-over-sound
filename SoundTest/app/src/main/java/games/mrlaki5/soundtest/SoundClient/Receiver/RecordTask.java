@@ -163,7 +163,7 @@ public class RecordTask extends AsyncTask<Integer, Void, Void> implements Callba
                 //in chunks of 256B
                 EncoderDecoder encoder = new EncoderDecoder();
                 ByteArrayParser bParser=new ByteArrayParser();
-                ArrayList<byte[]> chunks=bParser.devideInto256Chunks(readBytes, ErrorCheckByteNum);
+                ArrayList<byte[]> chunks=bParser.divideInto256Chunks(readBytes, ErrorCheckByteNum);
                 //Decode bytes with ReedSolomon
                 for(int i=0; i<chunks.size(); i++){
                     readBytes = encoder.decodeData(chunks.get(i), ErrorCheckByteNum);
@@ -171,10 +171,10 @@ public class RecordTask extends AsyncTask<Integer, Void, Void> implements Callba
                 }
                 //Merge decoded chunks into one array
                 readBytes=bParser.getAndResetOutputByteArray();
-                //If data is transfered, do same for name of file (extension)
+                //If data is transferred, do same for name of file (extension)
                 if(namePartBArray!=null){
                     encoder = new EncoderDecoder();
-                    chunks=bParser.devideInto256Chunks(namePartBArray, ErrorCheckByteNum);
+                    chunks=bParser.divideInto256Chunks(namePartBArray, ErrorCheckByteNum);
                     for(int i=0; i<chunks.size(); i++){
                         namePartBArray = encoder.decodeData(chunks.get(i), ErrorCheckByteNum);
                         bParser.mergeArray(namePartBArray);

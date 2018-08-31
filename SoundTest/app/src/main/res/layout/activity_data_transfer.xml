@@ -16,7 +16,7 @@
         android:padding="5dp"
         android:paddingStart="15dp"
         android:paddingEnd="15dp"
-        android:background="#e6e6e6"
+        android:background="@color/colorGrey"
         android:layout_height="0dp"
         android:layout_weight="1"
         android:orientation="vertical">
@@ -25,7 +25,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textAlignment="center"
-            android:text="Send data:"
+            android:text="@string/send_data"
             android:textSize="20dp"/>
 
         <ProgressBar
@@ -42,7 +42,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/sendDataField"
-            android:background="#b8b8b8"
+            android:background="@color/colorGreyDark"
             android:padding="10dp"
             android:orientation="horizontal"
             android:onClick="browseFileExplorer"
@@ -66,7 +66,7 @@
                     android:layout_centerVertical="true"
                     android:id="@+id/sendDataText"
                     android:textSize="15dp"
-                    android:text="No file selected"/>
+                    android:text="@string/no_file_selected"/>
 
             </RelativeLayout>
 
@@ -79,7 +79,7 @@
             android:background="#b8b8b8"
             android:id="@+id/sendDataButt"
             android:visibility="invisible"
-            android:text="Send"
+            android:text="@string/send"
             android:onClick="sendData"/>
 
     </LinearLayout>
@@ -93,7 +93,7 @@
         android:padding="5dp"
         android:paddingStart="15dp"
         android:paddingEnd="15dp"
-        android:background="#e6e6e6"
+        android:background="@color/colorGrey"
         android:layout_height="0dp"
         android:layout_weight="1"
         android:orientation="vertical">
@@ -102,7 +102,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textAlignment="center"
-            android:text="Receive data:"
+            android:text="@string/receive_data"
             android:textSize="20dp"/>
 
         <TextView
@@ -110,7 +110,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
             android:layout_marginBottom="10dp"
-            android:text="Receiving data..."
+            android:text="@string/receiving_data"
             android:textStyle="bold"
             android:textAlignment="center"
             android:id="@+id/receiveDataTextReceive"
@@ -119,7 +119,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="#b8b8b8"
+            android:background="@color/colorGreyDark"
             android:padding="10dp"
             android:orientation="horizontal"
             android:clickable="true"
@@ -142,7 +142,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:textSize="15dp"
-                    android:text="Folder not selected"
+                    android:text="@string/folder_not_selected"
                     android:id="@+id/receiveDataText"
                     android:layout_centerVertical="true"/>
 
@@ -157,7 +157,7 @@
             android:layout_marginTop="10dp"
             android:background="#b8b8b8"
             android:visibility="invisible"
-            android:text="Listen"
+            android:text="@string/listen"
             android:onClick="listenData"/>
 
     </LinearLayout>

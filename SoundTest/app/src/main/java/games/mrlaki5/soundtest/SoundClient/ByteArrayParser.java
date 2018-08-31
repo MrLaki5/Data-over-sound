@@ -6,6 +6,7 @@ import java.util.List;
 
 public class ByteArrayParser {
 
+    //Array used when merging
     private byte[] outputByteArray=null;
 
     private byte[] concatenateTwoArrays(final byte[] array1, byte[] array2) {
@@ -14,7 +15,8 @@ public class ByteArrayParser {
         return joinedArray;
     }
 
-    public ArrayList<byte[]> devideInto256Chunks(byte[] inputArray, int errorDetBNum){
+    //Called to divide given byte array into byte arrays of size 256-errorDetNum
+    public ArrayList<byte[]> divideInto256Chunks(byte[] inputArray, int errorDetBNum){
         ArrayList<byte[]> tempList=new ArrayList<byte[]>();
         int startPos=0;
         int endPos=256-errorDetBNum;
@@ -31,6 +33,7 @@ public class ByteArrayParser {
         return tempList;
     }
 
+    //Called to add given array into one
     public void mergeArray(byte[] inputArray){
         if(outputByteArray==null){
             outputByteArray=inputArray;
@@ -40,10 +43,10 @@ public class ByteArrayParser {
         }
     }
 
+    //Called to return all given arrays as one and reset it
     public byte[] getAndResetOutputByteArray(){
         byte[] tempArr=outputByteArray;
         outputByteArray=null;
         return tempArr;
     }
-
 }

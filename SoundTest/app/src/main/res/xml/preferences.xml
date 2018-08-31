@@ -2,50 +2,49 @@
 <PreferenceScreen
     xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <PreferenceCategory android:title="General">
+    <PreferenceCategory android:title="@string/general">
         <EditTextPreference
-            android:dialogTitle="Edit start frequency:"
+            android:dialogTitle="@string/edit_start_frequency"
             android:key="StFrequency"
             android:summary="Click to show a text entry dialog"
-            android:title="Start frequency"
+            android:title="@string/start_frequency"
             android:inputType="number"/>
 
         <EditTextPreference
-            android:dialogTitle="Edit start frequency:"
+            android:dialogTitle="@string/edit_end_frequency"
             android:key="EndFrequency"
             android:summary="Click to show a text entry dialog"
-
-            android:title="End frequency"
+            android:title="@string/end_frequency"
             android:inputType="number"/>
 
         <ListPreference
-            android:dialogTitle="Bits per tone:"
+            android:dialogTitle="@string/edit_bits_per_tone"
             android:entries="@array/bits_per_tone"
             android:entryValues="@array/bits_per_tone"
             android:key="BitPerTone"
             android:summary="Something"
-            android:title="Bits per tone" />
+            android:title="@string/bits_per_tone" />
     </PreferenceCategory>
 
-    <PreferenceCategory android:title="Encoding">
+    <PreferenceCategory android:title="@string/encoding">
         <CheckBoxPreference
-            android:title="Encoding"
-            android:summary="Adaptive Huffman"
+            android:title="@string/encoding"
+            android:summary="@string/adaptive_huffman"
             android:key="Encoding"/>
     </PreferenceCategory>
 
-    <PreferenceCategory android:title="Error correction">
+    <PreferenceCategory android:title="@string/error_correction">
         <CheckBoxPreference
-            android:title="Error correction"
-            android:summary="Reed Solomon"
+            android:title="@string/error_correction"
+            android:summary="@string/reed_solomon"
             android:key="ErrDetection"/>
 
         <ListPreference
-            android:dialogTitle="Bits per tone:"
+            android:dialogTitle="@string/error_detection_byte_number_edit"
             android:entries="@array/error_corr_byte_num"
             android:entryValues="@array/error_corr_byte_num"
             android:key="ErrByteNum"
             android:summary="Something"
-            android:title="Error detection byte number" />
+            android:title="@string/error_detection_byte_number" />
     </PreferenceCategory>
 </PreferenceScreen>
