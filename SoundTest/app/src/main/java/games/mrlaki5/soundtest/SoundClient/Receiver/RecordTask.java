@@ -92,7 +92,7 @@ public class RecordTask extends AsyncTask<Integer, Void, Void> implements Callba
                 recordedArraySem.notifyAll();
             }
             //Calculate frequency from recorded data
-            double currNum=calculate(tempElem.getBuffer(), StartFrequency);
+            double currNum=calculate(tempElem.getBuffer(), StartFrequency, EndFrequency, HalfPadd);
             //Check if listening started
             if(listeningStarted==0){
                 //If listening didn't started and frequency is in range of StartHandshakeFrequency
@@ -235,11 +235,12 @@ public class RecordTask extends AsyncTask<Integer, Void, Void> implements Callba
     }
 
     //Called for calculating frequency with highest amplitude from sound sample
-    private double calculate(byte[] buffer, int StartFrequency) {
-        Complex[] fftTempArray1= new Complex[1024];
+    private double calculate(byte[] buffer, int StartFrequency, int EndFrequency, int HalfPad) {
+        int analyzedSize=1024;
+        Complex[] fftTempArray1= new Complex[analyzedSize];
         int tempI=-1;
         //Convert sound sample from byte to Complex array
-        for (int i = 0; i < 2048; i+=2) {
+        for (int i = 0; i < analyzedSize*2; i+=2) {
             short buff = buffer[i + 1];
             short buff2 = buffer[i];
             buff = (short) ((buff & 0xFF) << 8);
@@ -250,21 +251,26 @@ public class RecordTask extends AsyncTask<Integer, Void, Void> implements Callba
         }
         //Do fast fourier transform
         final  Complex[] fftArray1= FFT.fft(fftTempArray1);
-        //Calculate position in array where analyzing should start (high frequency filter)
-        int startIndex1=((StartFrequency-100)*(1024))/44100;
+        //Calculate position in array where analyzing should start and end
+
+        int startIndex1=((StartFrequency-HalfPad)*(analyzedSize))/44100;
+        int endIndex1=((EndFrequency+HalfPad)*(analyzedSize))/44100;
+
         int max_index1 = startIndex1;
         double max_magnitude1 = (int)fftArray1[max_index1].abs();
         double tempMagnitude;
         //Find position of frequency with highest amplitude
-        for (int i = startIndex1; i < (512) - 1; ++i) {
+
+
+        for (int i = startIndex1; i < endIndex1; ++i){
             tempMagnitude=fftArray1[i].abs();
             if(tempMagnitude > max_magnitude1){
                 max_magnitude1 = (int) tempMagnitude;
                 max_index1 = i;
             }
         }
-        //Calculate frequency from position
-        return 44100 * max_index1 / (1024);
+        return 44100 * max_index1 / (analyzedSize);
+
     }
 
     //Called to inform callback activity that receiving finished
