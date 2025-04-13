@@ -26,3 +26,8 @@ jobs:
     - name: Build with Gradle
       run: ./gradlew build
       working-directory: ./SoundTest
+    - uses: actions/upload-artifact@v4
+      name: "Upload generated APK"
+      with:
+        name: data-over-sound.apk
+        path: /home/runner/work/Data-over-sound/Data-over-sound/SoundTest/app/build/outputs/apk/debug/app-debug.apk
