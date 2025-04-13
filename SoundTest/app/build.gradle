@@ -5,7 +5,7 @@ android {
     defaultConfig {
         applicationId "games.mrlaki5.soundtest"
         minSdkVersion 21
-        targetSdkVersion 26
+        targetSdkVersion 33
         compileSdk rootProject.ext.compileSdkVersion
         versionCode 1
         versionName "1.0"
