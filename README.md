@@ -9,3 +9,4 @@
 	*	Uses frequency modulation (key-shifting) to send data.
 	*	Encoding done with adaptive Huffman.
 	*	Error correction done with Reed Solomon's algorithm.
+* [APK download](https://github.com/MrLaki5/Data-over-sound/actions/runs/14546459885/artifacts/2972989187)
