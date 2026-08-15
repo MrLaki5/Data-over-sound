@@ -243,6 +243,7 @@ public class RecordTask extends AsyncTask<Integer, Void, Void> implements Callba
     //Returns name that system gave to created file or null if file couldn't be saved.
     private String saveFile(byte[] data, String fileExtension){
         OutputStream out=null;
+        boolean saved=false;
         try {
             String extension=cleanExtension(fileExtension);
             //Type is needed by system to create file, without known one file is plain data
@@ -264,6 +265,10 @@ public class RecordTask extends AsyncTask<Integer, Void, Void> implements Callba
             }
             out.write(data);
             out.flush();
+            //Some providers send data to their storage only on close, so close has to succeed
+            //before receiving is reported as done
+            out.close();
+            saved=true;
             //System can rename file if one with same name already exists there
             return DocumentUtils.getDisplayName(resolver, fileUri, wantedName);
         }
@@ -272,7 +277,8 @@ public class RecordTask extends AsyncTask<Integer, Void, Void> implements Callba
             return null;
         }
         finally {
-            if(out!=null){
+            //Stream is still open only when saving failed, closing it can't change that result
+            if(out!=null && !saved){
                 try {
                     out.close();
                 }
