@@ -15,11 +15,14 @@
     <string name="no_file_selected">No file selected</string>
     <string name="folder_not_selected">Folder not selected</string>
     <string name="receiving_data">Receiving data…</string>
-    <string name="choose_current_folder">choose current folder</string>
     <string name="data_received">Data received:</string>
     <string name="data_was_sent">Data was sent</string>
-    <string name="choose_folder">Choose folder:</string>
-    <string name="choose_file">Choose file:</string>
+    <string name="chosen_file">Chosen file</string>
+    <string name="chosen_folder">Chosen folder</string>
+    <string name="no_file_manager">No app for choosing files on this device</string>
+    <string name="file_read_error">Chosen file can\'t be read</string>
+    <string name="data_receive_error">Data received, but file can\'t be saved in chosen folder</string>
+    <string name="mic_permission_needed">Microphone permission is needed for receiving data</string>
     <!-- Settings activity -->
     <string name="encoding">Encoding</string>
     <string name="general">General</string>
