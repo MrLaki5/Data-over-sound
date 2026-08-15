@@ -1,16 +1,20 @@
 package games.mrlaki5.soundtest.SoundClient.Receiver;
 
+import android.content.ContentResolver;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Process;
+import android.provider.DocumentsContract;
 import android.util.Log;
+import android.webkit.MimeTypeMap;
 
-import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Locale;
 
 import games.mrlaki5.soundtest.AdaptiveHuffman.AdaptiveHuffmanDecompress;
 import games.mrlaki5.soundtest.AdaptiveHuffman.BitInputStream;
@@ -20,11 +24,21 @@ import games.mrlaki5.soundtest.ReedSolomon.EncoderDecoder;
 import games.mrlaki5.soundtest.SoundClient.BitFrequencyConverter;
 import games.mrlaki5.soundtest.SoundClient.ByteArrayParser;
 import games.mrlaki5.soundtest.SoundClient.CallbackSendRec;
+import games.mrlaki5.soundtest.SoundClient.DocumentUtils;
 
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 import static android.os.Process.THREAD_PRIORITY_MORE_FAVORABLE;
 
 public class RecordTask extends AsyncTask<Integer, Void, Void> implements Callback {
+
+    //Name given to every received file, system adds counter on it if it already exists
+    private static final String RECEIVED_FILE_NAME="receivedFile";
+    //Extension used when received one is empty or unusable
+    private static final String DEFAULT_EXTENSION="bin";
+    //Type used when received extension is unknown
+    private static final String DEFAULT_MIME_TYPE="application/octet-stream";
+    //Longest extension that is accepted, received one can be damaged by noise
+    private static final int MAX_EXTENSION_LENGTH=10;
 
     //Size of recorded samples
     private int bufferSizeInBytes = 0;
@@ -40,8 +54,10 @@ public class RecordTask extends AsyncTask<Integer, Void, Void> implements Callba
     private String myString="";
     //Callback (father) activity where message is passed after recording
     private CallbackSendRec callbackRet;
-    //If data is being sent, this is name of directory where file should be saved
-    private String fileName=null;
+    //If file is being received, resolver used to reach folder chosen by user
+    private ContentResolver resolver=null;
+    //If file is being received, document tree of folder where file should be saved
+    private Uri destinationFolder=null;
 
     @Override
     protected Void doInBackground(Integer... integers) {
@@ -125,10 +141,11 @@ public class RecordTask extends AsyncTask<Integer, Void, Void> implements Callba
                     if(currNum>(HandshakeEnd-HalfPadd)){
                         endCounter++;
                         //If there were two EndHandshakeFrequency one after another stop recording if
-                        //chat message is expected fileName==null or if its data transfer and only name
-                        //has been received, reset counters and flags and start receiving file data.
+                        //chat message is expected destinationFolder==null or if its data transfer and
+                        //only name has been received, reset counters and flags and start receiving
+                        //file data.
                         if(endCounter>=2){
-                            if(fileName!=null && namePartBArray==null){
+                            if(destinationFolder!=null && namePartBArray==null){
                                 namePartBArray=bitConverter.getAndResetReadBytes();
                                 listeningStarted=0;
                                 startCounter=0;
@@ -206,32 +223,86 @@ public class RecordTask extends AsyncTask<Integer, Void, Void> implements Callba
                 myString = new String(readBytes, "UTF-8");
             }
             else{
-                //If its data transfer create file on given location with created name that
-                //doesn't exist there and received extension. Fill it with received data.
-                //And return name of file to callback activity
+                //If its data transfer create file with received extension in folder chosen by
+                //user and fill it with received data. Name of file is returned to callback
+                //activity, null is returned if file couldn't be saved.
                 String fileExtension = new String(namePartBArray, "UTF-8");
-                int tempCnt=1;
-                boolean tempFlag=true;
-                File tempFile=null;
-                while(tempFlag){
-                    myString="receivedFile"+tempCnt+"."+fileExtension;
-                    String fullName=fileName+"/"+myString;
-                    tempFile = new File(fullName);
-                    if(!tempFile.exists()){
-                        tempFlag=false;
-                    }
-                    tempCnt++;
-                }
-                tempFile.createNewFile();
-                BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(tempFile));
-                bos.write(readBytes);
-                bos.flush();
-                bos.close();
+                myString=saveFile(readBytes, fileExtension);
             }
         } catch (Exception e) {
             e.printStackTrace();
+            //Received data is unusable, callback activity is informed about it
+            if(destinationFolder!=null){
+                myString=null;
+            }
         }
         return null;
+    }
+
+    //Creates file with given extension in folder chosen by user and writes received data in it.
+    //Returns name that system gave to created file or null if file couldn't be saved.
+    private String saveFile(byte[] data, String fileExtension){
+        OutputStream out=null;
+        boolean saved=false;
+        try {
+            String extension=cleanExtension(fileExtension);
+            //Type is needed by system to create file, without known one file is plain data
+            String mimeType=MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
+            if(mimeType==null){
+                mimeType=DEFAULT_MIME_TYPE;
+            }
+            //Chosen folder is document tree, files are created inside its root document
+            Uri folderUri=DocumentsContract.buildDocumentUriUsingTree(destinationFolder,
+                    DocumentsContract.getTreeDocumentId(destinationFolder));
+            String wantedName=RECEIVED_FILE_NAME + "." + extension;
+            Uri fileUri=DocumentsContract.createDocument(resolver, folderUri, mimeType, wantedName);
+            if(fileUri==null){
+                return null;
+            }
+            out=resolver.openOutputStream(fileUri);
+            if(out==null){
+                return null;
+            }
+            out.write(data);
+            out.flush();
+            //Some providers send data to their storage only on close, so close has to succeed
+            //before receiving is reported as done
+            out.close();
+            saved=true;
+            //System can rename file if one with same name already exists there
+            return DocumentUtils.getDisplayName(resolver, fileUri, wantedName);
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
+        finally {
+            //Stream is still open only when saving failed, closing it can't change that result
+            if(out!=null && !saved){
+                try {
+                    out.close();
+                }
+                catch (IOException e){
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    //Removes from received extension characters that can't be in file name. Extension is
+    //received over sound, so noise can damage it.
+    private String cleanExtension(String fileExtension){
+        StringBuilder cleanedExtension=new StringBuilder();
+        for(int i=0; i<fileExtension.length() && cleanedExtension.length()<MAX_EXTENSION_LENGTH; i++){
+            char currChar=fileExtension.charAt(i);
+            if(Character.isLetterOrDigit(currChar)){
+                cleanedExtension.append(currChar);
+            }
+        }
+        if(cleanedExtension.length()==0){
+            return DEFAULT_EXTENSION;
+        }
+        return cleanedExtension.toString().toLowerCase(Locale.US);
     }
 
     //Called for calculating frequency with highest amplitude from sound sample
@@ -329,7 +400,9 @@ public class RecordTask extends AsyncTask<Integer, Void, Void> implements Callba
         this.callbackRet = callbackRet;
     }
 
-    public void setFileName(String fileName){
-        this.fileName=fileName;
+    //Called to receive file instead of chat message, folder is document tree chosen by user
+    public void setDestinationFolder(ContentResolver resolver, Uri destinationFolder){
+        this.resolver=resolver;
+        this.destinationFolder=destinationFolder;
     }
 }

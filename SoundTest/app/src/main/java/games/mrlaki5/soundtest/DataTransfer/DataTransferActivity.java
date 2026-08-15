@@ -1,53 +1,53 @@
 package games.mrlaki5.soundtest.DataTransfer;
 
 import android.Manifest;
+import android.content.ActivityNotFoundException;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
-import android.os.Environment;
 import android.preference.PreferenceManager;
+import android.provider.DocumentsContract;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.BufferedInputStream;
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.util.ArrayList;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 import games.mrlaki5.soundtest.R;
 import games.mrlaki5.soundtest.Settings.SettingsActivity;
 import games.mrlaki5.soundtest.SoundClient.CallbackSendRec;
+import games.mrlaki5.soundtest.SoundClient.DocumentUtils;
 import games.mrlaki5.soundtest.SoundClient.Receiver.RecordTask;
 import games.mrlaki5.soundtest.SoundClient.Sender.BufferSoundTask;
 
 public class DataTransferActivity extends AppCompatActivity implements CallbackSendRec {
-    //File used in file browser for current place
-    private File currentFolder;
-    //File used in file browser for root folder
-    private File rootFolder;
-    //List for files and folders in file browser
-    private ListView myList;
-    //View for file browser dialog
-    private View myView;
-    //File browser dialog
-    private AlertDialog myDialog;
-    //File that needs to be send
-    private File sendFile=null;
-    //Folder where file is going to be received
-    private File receiveFolder=null;
+    //Request code of system picker for file that needs to be sent
+    private static final int REQUEST_PICK_FILE=0;
+    //Request code of system picker for folder where data is received
+    private static final int REQUEST_PICK_FOLDER=1;
+    //Request code of microphone permission, needed for receiving
+    private static final int REQUEST_RECORD_AUDIO=2;
+    //Extension sent for files that don't have one
+    private static final String DEFAULT_EXTENSION="bin";
+    //Size of chunk used while reading chosen file
+    private static final int READ_BUFFER_SIZE=4096;
+
+    //Document of file that needs to be send
+    private Uri sendFile=null;
+    //Document tree of folder where file is going to be received
+    private Uri receiveFolder=null;
     //Is data being send flag
     boolean sendingData=false;
     //Is activity listening for data flag
@@ -58,112 +58,6 @@ public class DataTransferActivity extends AppCompatActivity implements CallbackS
     private ProgressBar sendingBar=null;
     //Task for receiving data
     private RecordTask listeningTask=null;
-
-    //Listener for listView on browsing for file to be sent
-    private AdapterView.OnItemClickListener adapSendListener=new AdapterView.OnItemClickListener() {
-        @Override
-        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            File[] files= currentFolder.listFiles();
-            if(!currentFolder.getAbsolutePath().equals(rootFolder.getAbsolutePath())){
-                //On all folders except root on first position is back
-                if(position==0){
-                    //back is pressed
-                    currentFolder=currentFolder.getParentFile();
-                    loadAdapter();
-                }
-                else{
-                    //folder is pressed
-                    if(files[position-1].isDirectory()) {
-                        currentFolder = files[position-1];
-                        loadAdapter();
-                    }
-                    else{
-                        //file is pressed, disable dialog and save chosen file
-                        sendFile=files[position-1];
-                        ((TextView) findViewById(R.id.sendDataText)).setText(sendFile.getName());
-                        ImageView iv = findViewById(R.id.sendDataImage);
-                        iv.setImageResource(R.drawable.file_image);
-                        (findViewById(R.id.sendDataButt)).setVisibility(View.VISIBLE);
-                        if (myDialog != null){
-                            myDialog.dismiss();
-                            myDialog = null;
-                            myView=null;
-                        }
-                    }
-                }
-            }
-            //If its root folder
-            else{
-                //folder is pressed
-                if(files[position].isDirectory()) {
-                    currentFolder = files[position];
-                    loadAdapter();
-                }
-                else{
-                    //file is pressed, disable dialog and save chosen file
-                    sendFile=files[position];
-                    ((TextView) findViewById(R.id.sendDataText)).setText(sendFile.getName());
-                    ImageView iv = findViewById(R.id.sendDataImage);
-                    iv.setImageResource(R.drawable.file_image);
-                    (findViewById(R.id.sendDataButt)).setVisibility(View.VISIBLE);
-                    if (myDialog != null){
-                        myDialog.dismiss();
-                        myDialog = null;
-                        myView=null;
-                    }
-                }
-            }
-        }
-    };
-
-    //Listener for listView on browsing receive folder
-    private AdapterView.OnItemClickListener adapReceiveListener=new AdapterView.OnItemClickListener() {
-        @Override
-        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            File[] files= currentFolder.listFiles();
-            if(!currentFolder.getAbsolutePath().equals(rootFolder.getAbsolutePath())){
-                //On all folders except root on first position is back
-                if(position==0){
-                    //back is pressed
-                    currentFolder=currentFolder.getParentFile();
-                    loadAdapter();
-                }
-                else{
-                    //folder is pressed
-                    if(files[position-1].isDirectory()) {
-                        currentFolder = files[position-1];
-                        loadAdapter();
-                    }
-                }
-            }
-            //Its root folder
-            else{
-                //folder is pressed
-                if(files[position].isDirectory()) {
-                    currentFolder = files[position];
-                    loadAdapter();
-                }
-            }
-        }
-    };
-
-    //Listener for choosing receive folder in browse folder dialog
-    private View.OnClickListener receiveExplorerButtonListener=new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            //Save current folder and disable dialog
-            receiveFolder=currentFolder;
-            ((TextView) findViewById(R.id.receiveDataText)).setText(receiveFolder.getName());
-            ImageView iv = findViewById(R.id.receiveDataImage);
-            iv.setImageResource(R.drawable.folder_image);
-            (findViewById(R.id.receiveDataButt)).setVisibility(View.VISIBLE);
-            if (myDialog != null){
-                myDialog.dismiss();
-                myDialog = null;
-                myView=null;
-            }
-        }
-    };
 
     //Called on stopping activity
     @Override
@@ -193,88 +87,96 @@ public class DataTransferActivity extends AppCompatActivity implements CallbackS
         sendingBar=(findViewById(R.id.sendDataProgressBar));
     }
 
-    //Creates dialog for file explorer
-    private void browseFileExplorer(){
-        currentFolder= new File(Environment.getExternalStorageDirectory()
-                .getAbsolutePath());
-        rootFolder=currentFolder;
-        //Create dialog
-        AlertDialog.Builder mBuilder= new AlertDialog.Builder(this);
-        //Load dialog view
-        myView= getLayoutInflater().inflate(R.layout.dialog_file_explorer, null);
-        myList=(myView.findViewById(R.id.dialogFExFilesList));
-        myList.setOnItemClickListener(adapSendListener);
-        loadAdapter();
-        //Set view of dialog
-        mBuilder.setView(myView);
-        //Create and show dialog
-        mBuilder.setMessage(R.string.choose_file);
-        myDialog=mBuilder.create();
-        myDialog.show();
-    }
-
-    //Check if permission for storage are granted and activates dialog
+    //Opens system file picker for choosing file that needs to be sent. System picker is used
+    //because from Android 10 app can't browse storage of user on its own.
     public void browseFileExplorer(View view) {
-        if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
-        } else {
-            browseFileExplorer();
-        }
+        Intent intent=new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("*/*");
+        startPicker(intent, REQUEST_PICK_FILE);
     }
 
-    //Creates dialog for folder explorer
-    private void browseFolderExplorer(){
-        currentFolder= new File(Environment.getExternalStorageDirectory()
-                .getAbsolutePath());
-        rootFolder=currentFolder;
-        //Create dialog
-        AlertDialog.Builder mBuilder= new AlertDialog.Builder(this);
-        //Load dialog view
-        myView= getLayoutInflater().inflate(R.layout.dialog_folder_explorer, null);
-        //Add to buttons on dialog view click listeners
-        myList=(myView.findViewById(R.id.dialogFolderExFilesList));
-        myList.setOnItemClickListener(adapReceiveListener);
-        (myView.findViewById(R.id.dialogFolderExButton)).setOnClickListener(receiveExplorerButtonListener);
-        loadAdapter();
-        //Set view of dialog
-        mBuilder.setView(myView);
-        //Create and show dialog
-        mBuilder.setMessage(R.string.choose_folder);
-        myDialog=mBuilder.create();
-        myDialog.show();
-    }
-
-    //Check if permission for storage are granted and activates dialog
+    //Opens system folder picker for choosing folder where received data is saved
     public void browseFolderExplorer(View view){
-        if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
-        } else {
-            browseFolderExplorer();
+        startPicker(new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE), REQUEST_PICK_FOLDER);
+    }
+
+    //Starts system picker, informs user if there is no app for choosing documents on device
+    private void startPicker(Intent intent, int requestCode){
+        try {
+            startActivityForResult(intent, requestCode);
+        }
+        catch (ActivityNotFoundException e){
+            e.printStackTrace();
+            Toast.makeText(this, R.string.no_file_manager, Toast.LENGTH_LONG).show();
         }
     }
 
-    //Fills file browser view with files and folders from current folder
-    private void loadAdapter(){
-        File[] files= currentFolder.listFiles();
-        ArrayList<FileExplorerElement> folders=new ArrayList<>();
-        //if its not root folder add back option
-        if(!currentFolder.getAbsolutePath().equals(rootFolder.getAbsolutePath())){
-            folders.add(new FileExplorerElement("Back", "", false, true));
+    //Called when user chooses file or folder in system picker
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(resultCode!=RESULT_OK || data==null || data.getData()==null){
+            return;
         }
-        for (File file : files) {
-            String fileNameTmp = file.getName();
-            String fileSizeTmp = "" + file.length() + "B";
-            boolean isFolder = file.isDirectory();
-            folders.add(new FileExplorerElement(fileNameTmp, fileSizeTmp, !isFolder, false));
+        Uri chosenUri=data.getData();
+        if(requestCode==REQUEST_PICK_FILE){
+            //Save chosen file and update GUI
+            keepAccessToDocument(chosenUri, false);
+            sendFile=chosenUri;
+            String fileName=DocumentUtils.getDisplayName(getContentResolver(), chosenUri,
+                    getString(R.string.chosen_file));
+            ((TextView) findViewById(R.id.sendDataText)).setText(fileName);
+            ImageView iv = findViewById(R.id.sendDataImage);
+            iv.setImageResource(R.drawable.file_image);
+            (findViewById(R.id.sendDataButt)).setVisibility(View.VISIBLE);
         }
-        FileExplorerAdapter adapter=new FileExplorerAdapter(DataTransferActivity.this, folders);
-        myList.setAdapter(adapter);
+        else{
+            if(requestCode==REQUEST_PICK_FOLDER){
+                //Save chosen folder and update GUI
+                keepAccessToDocument(chosenUri, true);
+                receiveFolder=chosenUri;
+                ((TextView) findViewById(R.id.receiveDataText)).setText(getFolderName(chosenUri));
+                ImageView iv = findViewById(R.id.receiveDataImage);
+                iv.setImageResource(R.drawable.folder_image);
+                (findViewById(R.id.receiveDataButt)).setVisibility(View.VISIBLE);
+            }
+        }
+    }
+
+    //Returns name that system shows for folder chosen in picker
+    private String getFolderName(Uri treeUri){
+        try {
+            //Chosen folder is document tree, its name is kept on root document of that tree
+            Uri folderUri=DocumentsContract.buildDocumentUriUsingTree(treeUri,
+                    DocumentsContract.getTreeDocumentId(treeUri));
+            return DocumentUtils.getDisplayName(getContentResolver(), folderUri,
+                    getString(R.string.chosen_folder));
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            return getString(R.string.chosen_folder);
+        }
+    }
+
+    //Called to keep access to chosen document, so it can be used after device is rotated.
+    //File that is sent is only read, folder where data is received is also written in.
+    private void keepAccessToDocument(Uri documentUri, boolean needsWrite){
+        try {
+            if(needsWrite){
+                getContentResolver().takePersistableUriPermission(documentUri,
+                        Intent.FLAG_GRANT_READ_URI_PERMISSION
+                                | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            }
+            else{
+                getContentResolver().takePersistableUriPermission(documentUri,
+                        Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            }
+        }
+        catch (SecurityException e){
+            //Access was given only until activity is alive, that is enough for one transfer
+            e.printStackTrace();
+        }
     }
 
     //Called when data is send
@@ -290,21 +192,22 @@ public class DataTransferActivity extends AppCompatActivity implements CallbackS
             }
         }
         if(!sendingData) {
-            //Load file and start sending it in send task, update GUI to send state
+            //Load chosen file, if it can't be read inform user and stay in initial state
+            byte[] bytes=readDocument(sendFile);
+            if(bytes==null){
+                Toast toast=Toast.makeText(this, R.string.file_read_error, Toast.LENGTH_LONG);
+                toast.show();
+                return;
+            }
+            //Start sending file in send task, update GUI to send state
             try {
-                byte bytes[] = new byte[(int) sendFile.length()];
-                BufferedInputStream bis = new BufferedInputStream(new FileInputStream(sendFile));
-                DataInputStream dis = new DataInputStream(bis);
-                dis.readFully(bytes);
                 sendingData=true;
                 (findViewById(R.id.sendDataProgressBar)).setVisibility(View.VISIBLE);
                 (findViewById(R.id.sendDataField)).setClickable(false);
                 ((Button) view).setText(R.string.stop);
                 //Send only extension of file from file name, faster sending
-                String fileName=sendFile.getName();
-                String tempStr[]=fileName.split("\\.");
-                fileName=tempStr[tempStr.length-1];
-                byte[] nameBytes=fileName.getBytes("UTF-8");
+                String fileName=DocumentUtils.getDisplayName(getContentResolver(), sendFile, "");
+                byte[] nameBytes=getExtension(fileName).getBytes("UTF-8");
                 Integer[] sendArguments=getSettingsArguments();
                 sendTask= new BufferSoundTask();
                 sendTask.setProgressBar(sendingBar);
@@ -326,6 +229,47 @@ public class DataTransferActivity extends AppCompatActivity implements CallbackS
         }
     }
 
+    //Reads whole content of chosen document, returns null if document can't be read
+    private byte[] readDocument(Uri documentUri){
+        InputStream in=null;
+        try {
+            in=getContentResolver().openInputStream(documentUri);
+            if(in==null){
+                return null;
+            }
+            ByteArrayOutputStream out=new ByteArrayOutputStream();
+            byte[] buffer=new byte[READ_BUFFER_SIZE];
+            int readNum;
+            while((readNum=in.read(buffer))!=-1){
+                out.write(buffer, 0, readNum);
+            }
+            return out.toByteArray();
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
+        finally {
+            if(in!=null){
+                try {
+                    in.close();
+                }
+                catch (IOException e){
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    //Returns extension of given file name, if file name doesn't have one default is returned
+    private String getExtension(String fileName){
+        int dotIndex=fileName.lastIndexOf('.');
+        if(dotIndex>=0 && dotIndex<(fileName.length()-1)){
+            return fileName.substring(dotIndex+1);
+        }
+        return DEFAULT_EXTENSION;
+    }
+
     //Called to start listening for data
     public void listenData(View view) {
         if(receiveFolder==null){
@@ -339,19 +283,14 @@ public class DataTransferActivity extends AppCompatActivity implements CallbackS
             }
         }
         if(!listeningData) {
-            //Start listening task and refresh GUI
-            try {
-                listeningData=true;
-                (findViewById(R.id.receiveDataField)).setClickable(false);
-                ((Button) view).setText(R.string.stop);
-                Integer[] sendArguments=getSettingsArguments();
-                listeningTask=new RecordTask();
-                listeningTask.setCallbackRet(this);
-                listeningTask.setFileName(receiveFolder.getAbsolutePath());
-                listeningTask.execute(sendArguments);
+            //Recording needs microphone permission, listening starts after user grants it
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.RECORD_AUDIO}, REQUEST_RECORD_AUDIO);
             }
-            catch(Exception e){
-                e.printStackTrace();
+            else {
+                listen();
             }
         }
         else{
@@ -360,6 +299,27 @@ public class DataTransferActivity extends AppCompatActivity implements CallbackS
                 listeningTask.setWorkFalse();
             }
             stopListen();
+        }
+    }
+
+    //Called to start listening task and refresh GUI
+    private void listen(){
+        if(receiveFolder==null){
+            return;
+        }
+        try {
+            listeningData=true;
+            (findViewById(R.id.receiveDataField)).setClickable(false);
+            ((Button) findViewById(R.id.receiveDataButt)).setText(R.string.stop);
+            Integer[] sendArguments=getSettingsArguments();
+            listeningTask=new RecordTask();
+            listeningTask.setCallbackRet(this);
+            listeningTask.setDestinationFolder(getApplicationContext().getContentResolver(),
+                    receiveFolder);
+            listeningTask.execute(sendArguments);
+        }
+        catch(Exception e){
+            e.printStackTrace();
         }
     }
 
@@ -417,19 +377,16 @@ public class DataTransferActivity extends AppCompatActivity implements CallbackS
     public void onRequestPermissionsResult(int requestCode,
                                            @NonNull String permissions[], @NonNull int[] grantResults) {
         switch (requestCode) {
-            case 0: {
-                //Permission to storage granted on file browser
+            case REQUEST_RECORD_AUDIO: {
+                //If user granted permission on mic, continue with listening
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    browseFileExplorer();
+                    listen();
                 }
-                break;
-            }
-            case 1: {
-                //Permission to storage granted on folder browser
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    browseFolderExplorer();
+                else{
+                    Toast toast=Toast.makeText(this, R.string.mic_permission_needed,
+                            Toast.LENGTH_LONG);
+                    toast.show();
                 }
                 break;
             }
@@ -454,6 +411,13 @@ public class DataTransferActivity extends AppCompatActivity implements CallbackS
         else{
             if(CallbackSendRec.RECEIVE_ACTION==srFlag && listeningData){
                 stopListen();
+                //Data was received, but file couldn't be created in chosen folder
+                if(message==null){
+                    Toast toast=Toast.makeText(this, R.string.data_receive_error,
+                            Toast.LENGTH_LONG);
+                    toast.show();
+                    return;
+                }
                 (findViewById(R.id.receiveDataButt)).setVisibility(View.INVISIBLE);
                 receiveFolder=null;
                 ((TextView) findViewById(R.id.receiveDataText)).setText(R.string.folder_not_selected);
